@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+
+export const dynamic = 'force-dynamic'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import AnimatedBackground from '@/components/AnimatedBackground'
