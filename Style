@@ -1,0 +1,111 @@
+Style Criteria – Kids Edition (Electronic Story Library)
+1) Brand Personality
+Audience: Kids ages 7–11, classroom use.
+Tone: Friendly, playful, encouraging, zero intimidation.
+Goal: Make reading feel like a game—bright colors, big buttons, simple words, happy characters.
+2) Visual Identity
+Color Palette (WCAG-aware)
+Primary: Sky Blue #48B8FF
+Secondary: Sunshine Yellow #FFD44D
+Accent 1: Fresh Green #4CD17E
+Accent 2: Coral Red #FF6F6F
+Ink / Body Text: Navy #1E2A3A
+Surface / Card: Soft White #FFFFFF
+Background: Cloud #F4FAFF
+Success: #2ECC71 | Warning: #F39C12 | Error: #E74C3C
+Contrast rule: Body text on any background ≥ 4.5:1; large display text ≥ 3:1.
+Typography
+Headings: “Baloo 2” or “Fredoka” (rounded, kid-friendly)
+Body/UI: “Inter” or “Nunito”
+Sizes (mobile first): H1 28–32, H2 22–24, H3 18–20, Body 16–18, Caption 14
+Weights: 700 for headings, 400–500 for body
+Line-height: 1.35–1.5 for readability
+Arabic support (if RTL): “Tajawal” or “Cairo”
+Iconography & Illustration
+Style: Flat or subtle-shaded cartoon style; rounded corners; smiling characters.
+Consistency: Unified stroke weight and color fills; no photorealism.
+Use cases:
+Grade icons: fun badges (3️⃣ 4️⃣ 6️⃣).
+Difficulty badges: Easy = green star, Hard = orange lightning.
+Licensing: Only use assets with commercial rights (document source).
+3) Layout & Components
+Grid: 12-col desktop, 6-col tablet, 4-col mobile. Ample white space.
+Cards: Rounded corners (16–20px), soft shadow, generous padding.
+Buttons: XL tappable targets (min 44×44 px), bold labels; primary = solid Sky Blue; hover = slightly darker blue; focus ring 3px.
+Tabs/Filters: Big touchable chips; active chip uses Sunshine Yellow background + Navy text.
+Progress: Fun badges + progress bars with animated fill (200–300ms).
+Forms: One concept per screen; large inputs; helper text; success confetti (subtle) on submit.
+4) Imagery & Backgrounds
+Backgrounds: Light patterned clouds, stars, books, pencils—very low contrast (opacity 5–8%) to avoid distraction.
+Hero Images: High-resolution 2×/3× assets (WebP/PNG). Example target:
+Mobile hero: 1440×960
+Desktop hero: 2560×1200
+Story Thumbnails: 512×512 (WebP preferred); keep file < 200 KB via compression.
+Illustration Subjects: Diverse kids, animals, friendly robots, open books.
+No clutter: Never place dense art behind body text.
+5) Motion & Feedback
+Micro-animations: 150–250ms ease-out on hover/focus/press; bounce limited to 1 cycle.
+Rewards: Small celebratory burst (confetti/stars) on form completion; duration < 1s.
+Reduced Motion: Respect prefers-reduced-motion; provide instant state changes.
+6) Accessibility (A11y)
+Touch targets: ≥ 44×44 px.
+Focus states: Visible focus ring (3px) with offset.
+ARIA: Landmarks for main/aside/nav; labels on all inputs; error messaging with aria-live.
+Language & RTL: Enable Arabic (dir="rtl") when needed; mirror layouts appropriately.
+Readable copy: Short sentences, bullet lists, friendly verbs (“Tap,” “Read,” “Start”).
+7) Content Style (Copy Guidelines)
+Voice: Cheerful, encouraging, positive reinforcement.
+Examples:
+Empty state: “Let’s start your first story! 🌟”
+Success: “Great job! Your answers reached your teacher.”
+Hard difficulty tooltip: “A little trickier—give it a try!”
+8) Asset Specs & Delivery
+Raster: WebP first, PNG fallback (transparent).
+Vector: SVG for icons/flat illustrations.
+Favicon/App Icons: 32×32, 192×192, 512×512.
+Preload: Key fonts (swap), hero image on home only.
+Compression targets:
+Icons < 30 KB
+Thumbs < 200 KB
+Heroes < 600 KB (desktop)
+9) Example Tokens (Design System)
+{
+  "colors": {
+    "primary": "#48B8FF",
+    "secondary": "#FFD44D",
+    "accent1": "#4CD17E",
+    "accent2": "#FF6F6F",
+    "ink": "#1E2A3A",
+    "bg": "#F4FAFF",
+    "surface": "#FFFFFF",
+    "success": "#2ECC71",
+    "warning": "#F39C12",
+    "error": "#E74C3C"
+  },
+  "radii": { "sm": 8, "md": 16, "lg": 20, "xl": 28 },
+  "shadow": { "card": "0 8px 20px rgba(0,0,0,0.06)" },
+  "spacing": { "cardPadding": 20, "section": 32 },
+  "typography": {
+    "headingFamily": "Baloo 2, Fredoka, system-ui",
+    "bodyFamily": "Inter, Nunito, system-ui",
+    "h1": 32, "h2": 24, "h3": 20, "body": 16, "caption": 14,
+    "lineHeight": 1.45
+  }
+}
+10) Tailwind Utility Hints (if using Tailwind)
+Card: rounded-2xl shadow-lg p-6 bg-white
+Primary Button: rounded-xl px-6 py-3 font-bold bg-sky-400 text-white hover:bg-sky-500 focus:outline-none focus:ring-4 focus:ring-yellow-300
+Chip (Active): rounded-full px-4 py-2 bg-yellow-300 text-slate-900
+Badge: inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm bg-green-200
+11) Component Rules
+Story Card: Illustration top, title (2 lines max), difficulty badge, “Read” button full-width.
+Student Row: Avatar, name, counters (Stories • Forms), current title badge.
+Form Screen: Stepper (1–2–3), big inputs, submit CTA always visible, success screen with badge earned.
+12) Do / Don’t
+✅ Do: big tap areas, bright but balanced palette, minimal text per screen.
+✅ Do: consistent icon set and rounded geometry.
+❌ Don’t: thin fonts, long paragraphs, dark busy backgrounds, low-contrast text.
+❌ Don’t: aggressive animations or flashing effects.
+One-Line Brief for Cursor AI
+“Apply a bright, kid-friendly design with rounded components, high-contrast text, high-res cartoon backgrounds (low-opacity), large tap targets, playful badges, micro-animations (≤250ms), and accessible RTL support. Use the provided colors, fonts, and tokens and ship responsive cards, big buttons, progress badges, and confetti feedback on form completion.”
+If you want, I can also generate sample SVG badges or a starter Tailwind config using these tokens.

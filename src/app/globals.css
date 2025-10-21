@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Styles */
+html {
+  font-family: var(--font-almarai), var(--font-cairo), system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
+  background-color: #0F172A;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  direction: rtl;
+  text-align: right;
+  background-color: #0F172A;
+  color: #F1F5F9;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* RTL Adjustments */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Selection Styles */
+::selection {
+  background-color: #3B82F6;
+  color: white;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3B82F6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+/* Form Elements */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+input, textarea, select {
+  background-color: #1E293B;
+  color: #FFFFFF;
+  border-color: #334155;
+}
+
+input::placeholder {
+  color: #94A3B8;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Utility Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+.dir-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.dir-ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Glass Morphism */
+.glass {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth Transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Touch Adjustments for Mobile */
+@media (max-width: 768px) {
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
