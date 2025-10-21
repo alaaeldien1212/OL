@@ -78,8 +78,10 @@ export default function StudentDashboard() {
       }
     }
 
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus)
+      return () => window.removeEventListener('focus', handleFocus)
+    }
   }, [isAuthenticated, user])
 
   const handleReadStory = (storyId: string, storyTitle: string) => {

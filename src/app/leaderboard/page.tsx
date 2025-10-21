@@ -41,8 +41,10 @@ export default function LeaderboardPage() {
       loadLeaderboard()
     }
 
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus)
+      return () => window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
   const loadLeaderboard = async () => {

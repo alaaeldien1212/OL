@@ -70,8 +70,10 @@ export default function TeacherAnalytics() {
       loadAnalytics()
     }
 
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus)
+      return () => window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
   const loadAnalytics = async () => {
