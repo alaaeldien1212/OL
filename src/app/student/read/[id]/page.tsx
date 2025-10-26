@@ -272,28 +272,41 @@ export default function StoryReader() {
 
   const handleComplete = async () => {
     try {
-      // Upload audio recording if it exists
-      if (audioBlob) {
-        toast.loading('جاري حفظ التسجيل الصوتي...', { id: 'uploading' })
-        
-        const studentData = user as any
-        const studentAccessCode = studentData.access_code
-        
-        try {
-          const audioUrl = await storageService.uploadAudioRecording(audioBlob, studentAccessCode, storyId)
-          
-          // Store the audio URL in localStorage with story ID as key
-          const storageKey = `audio_recording_${storyId}`
-          localStorage.setItem(storageKey, audioUrl)
-          
-          toast.success('تم حفظ التسجيل الصوتي بنجاح! 🎉', { id: 'uploading' })
-        } catch (error) {
-          console.error('Error uploading audio:', error)
-          toast.error('فشل تحميل التسجيل الصوتي، سيتم المتابعة بدون تسجيل', { id: 'uploading' })
-        }
-      } else {
-        toast.success('تم إكمال قراءة القصة! 🎉')
+      // Check if audio recording exists
+      if (!audioUrl || !audioBlob) {
+        toast.error('يرجى تسجيل صوتك أولاً قبل المتابعة! 📹', {
+          duration: 4000,
+          style: {
+            background: '#ef4444',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+          }
+        })
+        return
       }
+
+      // Upload audio recording
+      toast.loading('جاري حفظ التسجيل الصوتي...', { id: 'uploading' })
+      
+      const studentData = user as any
+      const studentAccessCode = studentData.access_code
+      
+      try {
+        const uploadedAudioUrl = await storageService.uploadAudioRecording(audioBlob, studentAccessCode, storyId)
+        
+        // Store the audio URL in localStorage with story ID as key
+        const storageKey = `audio_recording_${storyId}`
+        localStorage.setItem(storageKey, uploadedAudioUrl)
+        
+        toast.success('تم حفظ التسجيل الصوتي بنجاح! 🎉', { id: 'uploading' })
+      } catch (error) {
+        console.error('Error uploading audio:', error)
+        toast.error('فشل تحميل التسجيل الصوتي', { id: 'uploading' })
+        return
+      }
+      
+      toast.success('تم إكمال قراءة القصة! 🎉')
       
       setTimeout(() => {
         router.push(`/student/submit/${storyId}`)
@@ -301,7 +314,6 @@ export default function StoryReader() {
     } catch (error) {
       console.error('Error completing story:', error)
       toast.error('حدث خطأ في إكمال القصة')
-      router.push(`/student/submit/${storyId}`)
     }
   }
 
@@ -496,11 +508,11 @@ export default function StoryReader() {
               )}
               <Button
                 onClick={handleComplete}
-                variant="primary"
+                variant={!audioUrl ? "ghost" : "primary"}
                 size="lg"
-                className="shadow-lg"
+                className={!audioUrl ? "bg-white/30 hover:bg-white/40 border-2 border-yellow-400" : "shadow-lg"}
               >
-                انتهيت من القراءة ✓
+                {!audioUrl ? "📹 يجب التسجيل أولاً" : "انتهيت من القراءة ✓"}
               </Button>
             </div>
           </motion.div>
@@ -672,11 +684,11 @@ export default function StoryReader() {
                 </Button>
                 <Button
                   onClick={handleComplete}
-                  variant="primary"
+                  variant={!audioUrl ? "ghost" : "primary"}
                   size="md"
-                  className="flex-1 text-sm md:text-base"
+                  className={!audioUrl ? "flex-1 text-sm md:text-base bg-white/30 hover:bg-white/40 border-2 border-yellow-400" : "flex-1 text-sm md:text-base"}
                 >
-                  انتهيت من القراءة ✓
+                  {!audioUrl ? "📹 يجب التسجيل أولاً" : "انتهيت من القراءة ✓"}
                 </Button>
               </div>
             </motion.div>
