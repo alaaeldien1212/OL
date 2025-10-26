@@ -151,6 +151,40 @@ export const storiesService = {
   },
 }
 
+export const storageService = {
+  async uploadAudioRecording(audioBlob: Blob, studentAccessCode: string, storyId: string): Promise<string> {
+    try {
+      // Create a unique filename
+      const timestamp = Date.now()
+      const filename = `${studentAccessCode}_${storyId}_${timestamp}.webm`
+      const filePath = `voice-recordings/${filename}`
+
+      // Upload the blob to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('student-recordings')
+        .upload(filePath, audioBlob, {
+          contentType: 'audio/webm',
+          upsert: true
+        })
+
+      if (error) {
+        console.error('Error uploading audio:', error)
+        throw error
+      }
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('student-recordings')
+        .getPublicUrl(filePath)
+
+      return urlData.publicUrl
+    } catch (error) {
+      console.error('Failed to upload audio recording:', error)
+      throw error
+    }
+  },
+}
+
 export const formsService = {
   async getFormByStory(storyId: string) {
     const { data, error } = await supabase
@@ -173,13 +207,34 @@ export const formsService = {
     return data?.[0] || null
   },
 
-  async submitForm(studentAccessCode: string, storyId: string, formTemplateId: string, answers: Record<string, string>) {
-    const { data, error } = await supabase.rpc('student_submit_form', {
+  async submitForm(
+    studentAccessCode: string, 
+    storyId: string, 
+    formTemplateId: string, 
+    answers: Record<string, string>, 
+    audioUrl?: string,
+    autoGrade?: number,
+    autoFeedback?: string
+  ) {
+    const submissionData: any = {
       student_access_code: studentAccessCode,
       story_uuid: storyId,
       form_template_uuid: formTemplateId,
       form_responses: answers
-    })
+    }
+
+    // Add optional parameters if provided
+    if (audioUrl) {
+      submissionData.audio_url = audioUrl
+    }
+    if (autoGrade !== undefined) {
+      submissionData.auto_graded = autoGrade
+    }
+    if (autoFeedback) {
+      submissionData.auto_feedback = autoFeedback
+    }
+
+    const { data, error } = await supabase.rpc('student_submit_form', submissionData)
 
     if (error) throw error
     return data?.[0] || null
@@ -196,16 +251,22 @@ export const gradingService = {
     return data || []
   },
 
-  async gradeSubmission(submissionId: string, grade: number, feedback: string) {
-    console.log('Grading submission:', { submissionId, grade, feedback })
+  async gradeSubmission(submissionId: string, grade: number, feedback: string, voiceGrade?: number) {
+    console.log('Grading submission:', { submissionId, grade, feedback, voiceGrade })
     
     // Use the new RPC function instead of direct table update
-    const { data, error } = await supabase.rpc('teacher_grade_submission', {
+    const params: any = {
       teacher_access_code: (await this.getCurrentTeacherAccessCode()),
       submission_uuid: submissionId,
       grade_value: grade,
       feedback_text: feedback
-    })
+    }
+    
+    if (voiceGrade !== undefined) {
+      params.voice_grade_value = voiceGrade
+    }
+    
+    const { data, error } = await supabase.rpc('teacher_grade_submission', params)
 
     if (error) {
       console.error('Error grading submission:', error)

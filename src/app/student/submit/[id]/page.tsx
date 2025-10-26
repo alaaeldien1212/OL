@@ -7,7 +7,7 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
-import { formsService } from '@/lib/supabase'
+import { formsService, storiesService } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
 import { ArrowLeft, Send, BookOpen } from 'lucide-react'
 
@@ -36,6 +36,7 @@ export default function StoryForm() {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isAutoGrading, setIsAutoGrading] = useState(false)
 
   const storyId = params.id as string
 
@@ -111,17 +112,75 @@ export default function StoryForm() {
 
     try {
       setIsSubmitting(true)
+      setIsAutoGrading(true)
+      toast.loading('جاري التقييم التلقائي للإجابات...', { id: 'auto-grading' })
+      
       console.log('Submitting form answers:', answers)
       
       const studentData = user as any
+      
+      // Retrieve audio URL from localStorage if it exists
+      const storageKey = `audio_recording_${storyId}`
+      const audioUrl = localStorage.getItem(storageKey)
+      
+      // Fetch story details for auto-grading
+      const studentAccessCode = studentData.access_code
+      const story = await storiesService.getStudentSingleStory(studentAccessCode, storyId)
+      
+      if (!story) {
+        toast.error('لا يمكن العثور على القصة', { id: 'auto-grading' })
+        return
+      }
+
+      // Call auto-grading API
+      let autoGrade = null
+      let autoFeedback = null
+      
+      try {
+        toast.loading('جاري تقييم الإجابات بالذكاء الاصطناعي...', { id: 'auto-grading' })
+        
+        const gradingResponse = await fetch('/api/auto-grade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            questions: formTemplate.questions,
+            answers: answers,
+            storyContent: story.content_arabic,
+            storyTitle: story.title_arabic,
+            difficulty: story.difficulty,
+            gradeLevel: story.grade_level
+          })
+        })
+        
+        const gradingResult = await gradingResponse.json()
+        autoGrade = gradingResult.grade
+        autoFeedback = gradingResult.feedback
+        
+        console.log('Auto-grading result:', gradingResult)
+        toast.success(`تم التقييم التلقائي! الدرجة: ${autoGrade}`, { id: 'auto-grading' })
+      } catch (gradingError) {
+        console.error('Auto-grading failed:', gradingError)
+        toast.error('فشل التقييم التلقائي، سيتم إرسال الإجابة للمعلم', { id: 'auto-grading' })
+      }
+      
+      // Submit the form with auto-grading results
       const submissionData = await formsService.submitForm(
         studentData.access_code,
         storyId,
         formTemplate.id,
-        answers
+        answers,
+        audioUrl || undefined,
+        autoGrade || undefined,
+        autoFeedback || undefined
       )
 
       console.log('Form submitted successfully:', submissionData)
+      
+      // Clear the audio URL from localStorage after successful submission
+      if (audioUrl) {
+        localStorage.removeItem(storageKey)
+      }
+      
       toast.success('تم إرسال الإجابات بنجاح! 🎉')
       
       setTimeout(() => {
@@ -132,6 +191,8 @@ export default function StoryForm() {
       toast.error('حدث خطأ في إرسال الإجابات')
     } finally {
       setIsSubmitting(false)
+      setIsAutoGrading(false)
+      toast.dismiss('auto-grading')
     }
   }
 

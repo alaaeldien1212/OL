@@ -29,10 +29,13 @@ interface Submission {
   story_title: string
   form_title: string
   answers: any
+  questions: any[]
   grade?: number
   feedback?: string
   submitted_at: string
   graded_at?: string
+  audio_url?: string
+  voice_grade?: number
 }
 
 export default function GradingPage() {
@@ -43,6 +46,7 @@ export default function GradingPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
   const [grade, setGrade] = useState('')
   const [feedback, setFeedback] = useState('')
+  const [voiceGrade, setVoiceGrade] = useState('')
   const [isGrading, setIsGrading] = useState(false)
   const [filter, setFilter] = useState<'all' | 'graded' | 'ungraded'>('all')
 
@@ -86,10 +90,13 @@ export default function GradingPage() {
         story_title: sub.story_title,
         form_title: sub.form_title,
         answers: sub.responses,
+        questions: sub.questions || [],
         grade: sub.grade,
         feedback: sub.feedback,
         submitted_at: sub.submitted_at,
         graded_at: sub.graded_at,
+        audio_url: sub.audio_url,
+        voice_grade: sub.voice_grade,
       }))
 
       setSubmissions(formattedSubmissions)
@@ -111,11 +118,18 @@ export default function GradingPage() {
       return
     }
 
+    // Parse voice grade if provided
+    const voiceGradeNum = voiceGrade ? parseInt(voiceGrade) : undefined
+    if (voiceGrade && (isNaN(voiceGradeNum!) || voiceGradeNum! < 0 || voiceGradeNum! > 100)) {
+      toast.error('الرجاء إدخال درجة صوتية صحيحة (0-100)')
+      return
+    }
+
     try {
       setIsGrading(true)
-      console.log('Starting to grade submission:', selectedSubmission.id, 'with grade:', gradeNum)
+      console.log('Starting to grade submission:', selectedSubmission.id, 'with grade:', gradeNum, 'voice grade:', voiceGradeNum)
 
-      const result = await gradingService.gradeSubmission(selectedSubmission.id, gradeNum, feedback)
+      const result = await gradingService.gradeSubmission(selectedSubmission.id, gradeNum, feedback, voiceGradeNum)
       console.log('Grading completed successfully:', result)
 
       toast.success('تم تقييم الإجابة بنجاح! 🎉')
@@ -123,13 +137,14 @@ export default function GradingPage() {
       // Update local state
       setSubmissions(submissions.map(sub => 
         sub.id === selectedSubmission.id 
-          ? { ...sub, grade: gradeNum, feedback: feedback.trim(), graded_at: new Date().toISOString() }
+          ? { ...sub, grade: gradeNum, voice_grade: voiceGradeNum, feedback: feedback.trim(), graded_at: new Date().toISOString() }
           : sub
       ))
 
       setSelectedSubmission(null)
       setGrade('')
       setFeedback('')
+      setVoiceGrade('')
       
       // Refresh submissions to get updated data
       setTimeout(() => {
@@ -236,6 +251,7 @@ export default function GradingPage() {
                           setSelectedSubmission(submission)
                           setGrade(submission.grade?.toString() || '')
                           setFeedback(submission.feedback || '')
+                          setVoiceGrade(submission.voice_grade?.toString() || '')
                         }}
                       >
                         <div className="flex justify-between items-start">
@@ -251,6 +267,19 @@ export default function GradingPage() {
                               <FileText className="w-4 h-4 inline-block ml-1" />
                               {submission.form_title}
                             </p>
+                            {/* Voice Status */}
+                            {submission.audio_url && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="text-xs px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                  🎤 تسجيل صوتي
+                                </span>
+                                {submission.voice_grade === null && submission.grade !== null && (
+                                  <span className="text-xs px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 animate-pulse">
+                                    ⏳ في انتظار تقييم الصوت
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="text-left">
                             <div className="flex items-center gap-2 mb-2">
@@ -316,15 +345,78 @@ export default function GradingPage() {
                       <label className="block text-gray-300 font-semibold mb-2">
                         الإجابات
                       </label>
-                      <div className="bg-slate-900 p-4 rounded-lg max-h-40 overflow-y-auto">
-                        {Object.entries(selectedSubmission.answers).map(([key, value]) => (
-                          <div key={key} className="mb-3">
-                            <p className="text-sm text-gray-400 mb-1">{key}</p>
-                            <p className="text-white text-sm">{value as string}</p>
-                          </div>
-                        ))}
+                      <div className="bg-slate-900 p-4 rounded-lg max-h-60 overflow-y-auto">
+                        {(() => {
+                          // If we have questions array, use it
+                          if (selectedSubmission.questions && Array.isArray(selectedSubmission.questions) && selectedSubmission.questions.length > 0) {
+                            return selectedSubmission.questions.map((question: any, index: number) => {
+                              const answer = selectedSubmission.answers[question.id]
+                              
+                              return (
+                                <div key={question.id || index} className="mb-4 pb-4 border-b border-slate-700 last:border-b-0">
+                                  <p className="text-sm font-bold text-primary mb-2">
+                                    السؤال {index + 1}: {question.text_arabic}
+                                  </p>
+                                  <p className="text-white text-sm bg-slate-800 p-3 rounded-lg whitespace-pre-wrap">
+                                    {answer || 'لم يجب الطالب'}
+                                  </p>
+                                </div>
+                              )
+                            })
+                          }
+                          
+                          // Otherwise, iterate through answers and try to find matching questions
+                          return Object.entries(selectedSubmission.answers).map(([answerKey, value], index) => {
+                            // Try to find matching question
+                            const question = selectedSubmission.questions?.find((q: any) => q.id === answerKey)
+                            const questionText = question?.text_arabic || `السؤال ${index + 1}`
+                            
+                            return (
+                              <div key={answerKey} className="mb-4 pb-4 border-b border-slate-700 last:border-b-0">
+                                <p className="text-sm font-bold text-primary mb-2">
+                                  {questionText}
+                                </p>
+                                <p className="text-white text-sm bg-slate-800 p-3 rounded-lg whitespace-pre-wrap">
+                                  {value as string}
+                                </p>
+                              </div>
+                            )
+                          })
+                        })()}
                       </div>
                     </div>
+
+                    {/* Voice Recording */}
+                    {selectedSubmission.audio_url && (
+                      <div>
+                        <label className="block text-gray-300 font-semibold mb-2">
+                          التسجيل الصوتي للقراءة 🎤
+                        </label>
+                        <div className="bg-slate-900 p-4 rounded-lg">
+                          <audio controls className="w-full">
+                            <source src={selectedSubmission.audio_url} type="audio/webm" />
+                            متصفحك لا يدعم تشغيل الصوت
+                          </audio>
+                        </div>
+                        
+                        {/* Voice Grade Input */}
+                        <div className="mt-4">
+                          <label className="block text-gray-300 font-semibold mb-2">
+                            تقييم القراءة الصوتية (0-100)
+                          </label>
+                          <input
+                            type="number"
+                            value={voiceGrade}
+                            onChange={(e) => setVoiceGrade(e.target.value)}
+                            min="0"
+                            max="100"
+                            className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
+                            disabled={isGrading}
+                            placeholder="الدرجة (0-100)"
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     {/* Grade Input */}
                     <div>
@@ -375,6 +467,7 @@ export default function GradingPage() {
                           setSelectedSubmission(null)
                           setGrade('')
                           setFeedback('')
+                          setVoiceGrade('')
                         }}
                         variant="ghost"
                         size="md"

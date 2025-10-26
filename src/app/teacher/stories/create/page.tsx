@@ -17,11 +17,16 @@ export default function CreateStory() {
   const router = useRouter()
   const { user, userRole } = useAppStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Get teacher's assigned grade
+  const teacherData = user as any
+  const assignedGrade = teacherData?.assigned_grade || 3
+  
   const [story, setStory] = useState({
     title_arabic: '',
     content_arabic: '',
     difficulty: 'easy' as 'easy' | 'medium' | 'hard',
-    grade_level: 3,
+    grade_level: assignedGrade,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,17 +165,16 @@ export default function CreateStory() {
                   </label>
                   <select
                     value={story.grade_level}
-                    onChange={(e) =>
-                      setStory({ ...story, grade_level: parseInt(e.target.value) })
-                    }
-                    className="w-full px-4 py-3 text-lg border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
-                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 text-lg border-2 border-slate-700 rounded-lg bg-slate-800 text-white font-semibold opacity-75 cursor-not-allowed"
+                    disabled={true}
                   >
-                    <option value={3}>الصف الثالث</option>
-                    <option value={4}>الصف الرابع</option>
-                    <option value={5}>الصف الخامس</option>
-                    <option value={6}>الصف السادس</option>
+                    <option value={assignedGrade}>
+                      الصف {assignedGrade === 3 ? 'الثالث' : assignedGrade === 4 ? 'الرابع' : assignedGrade === 6 ? 'السادس' : assignedGrade}
+                    </option>
                   </select>
+                  <p className="text-gray-400 text-sm mt-2">
+                    الصف المعين لك من قبل المشرف
+                  </p>
                 </Card>
               </div>
 
