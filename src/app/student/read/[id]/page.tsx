@@ -352,8 +352,8 @@ export default function StoryReader() {
           onMouseMove={() => setShowControls(true)}
         >
           {/* Story Content */}
-          <div className="w-full h-full flex flex-col items-center justify-center overflow-auto p-6 md:p-12 pb-32 md:pb-40">
-            <div className="max-w-4xl w-full">
+          <div className="w-full h-full flex flex-col items-center justify-start overflow-auto p-4 md:p-12 pt-20 pb-32 md:pt-12 md:pb-40">
+            <div className="max-w-4xl w-full mt-8 md:mt-0">
               {/* Story Header */}
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -383,7 +383,7 @@ export default function StoryReader() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-xl text-right leading-relaxed text-gray-800 mb-8 bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+                className="text-xl text-right leading-relaxed text-gray-800 mb-8 bg-white/90 backdrop-blur-sm p-4 md:p-8 rounded-xl shadow-lg border border-gray-200 overflow-x-hidden overflow-y-visible"
               >
                 <div className="whitespace-pre-wrap font-arabic break-words" style={{ lineHeight: '2' }}>
                   {story.content_arabic}
