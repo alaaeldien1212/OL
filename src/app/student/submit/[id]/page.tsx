@@ -228,26 +228,27 @@ export default function StoryForm() {
   return (
     <AnimatedBackground>
       <Toaster position="top-center" />
-      <div className="w-full min-h-screen p-4 md:p-6" dir="rtl">
+      <div className="w-full min-h-screen p-3 md:p-6 pb-12 md:pb-6" dir="rtl">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
-                <BookOpen className="w-10 h-10 text-accent-green" />
-                {formTemplate.title_arabic}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center gap-2 md:gap-3">
+                <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-accent-green" />
+                <span>{formTemplate.title_arabic}</span>
               </h1>
-              <p className="text-gray-200 text-lg mt-2">{formTemplate.description_arabic}</p>
+              <p className="text-gray-200 text-sm md:text-lg mt-2">{formTemplate.description_arabic}</p>
             </div>
             <Button
               onClick={() => router.back()}
               variant="ghost"
-              size="md"
-              icon={<ArrowLeft className="w-5 h-5" />}
+              size="sm"
+              icon={<ArrowLeft className="w-4 h-4" />}
+              className="self-end md:self-auto"
             >
               العودة
             </Button>
@@ -262,13 +263,13 @@ export default function StoryForm() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card elevation="sm" padding="lg">
+                <Card elevation="sm" padding="md" className="p-4 md:p-6">
                   <div className="mb-4">
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                       السؤال {index + 1}
                       {question.required && <span className="text-accent-red mr-2">*</span>}
                     </h3>
-                    <p className="text-lg text-gray-200 mb-4">{question.text_arabic}</p>
+                    <p className="text-base md:text-lg text-gray-200 mb-4">{question.text_arabic}</p>
                   </div>
 
                   {question.type === 'short_answer' && (
@@ -277,7 +278,7 @@ export default function StoryForm() {
                       value={answers[question.id] || ''}
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       placeholder="اكتب إجابتك هنا..."
-                      className="w-full px-4 py-3 text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 text-base md:text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800"
                       disabled={isSubmitting}
                     />
                   )}
@@ -287,26 +288,26 @@ export default function StoryForm() {
                       value={answers[question.id] || ''}
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       placeholder="اكتب إجابتك المفصلة هنا..."
-                      rows={6}
-                      className="w-full px-4 py-3 text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800 resize-none"
+                      rows={4}
+                      className="w-full px-3 md:px-4 py-2 md:py-3 text-base md:text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800 resize-none"
                       disabled={isSubmitting}
                     />
                   )}
 
                   {question.type === 'multiple_choice' && question.options && (
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       {question.options.map((option, optionIndex) => (
-                        <label key={optionIndex} className="flex items-center space-x-3 cursor-pointer">
+                        <label key={optionIndex} className="flex items-center space-x-2 md:space-x-3 cursor-pointer py-2 md:py-0">
                           <input
                             type="radio"
                             name={question.id}
                             value={option}
                             checked={answers[question.id] === option}
                             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                            className="w-5 h-5 text-primary"
+                            className="w-6 h-6 md:w-5 md:h-5 text-primary"
                             disabled={isSubmitting}
                           />
-                          <span className="text-lg text-gray-200">{option}</span>
+                          <span className="text-base md:text-lg text-gray-200">{option}</span>
                         </label>
                       ))}
                     </div>
@@ -321,16 +322,16 @@ export default function StoryForm() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-8 flex justify-center"
+            className="mt-6 md:mt-8 flex justify-center"
           >
             <Button
               onClick={handleSubmit}
               variant="primary"
-              size="lg"
+              size="md"
               isLoading={isSubmitting}
               disabled={isSubmitting}
-              icon={<Send className="w-5 h-5" />}
-              className="px-8"
+              icon={<Send className="w-4 h-4 md:w-5 md:h-5" />}
+              className="w-full md:w-auto px-6 md:px-8"
             >
               {isSubmitting ? 'جاري الإرسال...' : 'إرسال الإجابات'}
             </Button>
