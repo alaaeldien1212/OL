@@ -83,14 +83,14 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/stories/create')}
+                onClick={() => router.push('/teacher/stories')}
               >
                 <div className="flex justify-center mb-3">
                   <BookOpen className="w-16 h-16 text-accent-green" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">إنشاء قصص</h3>
+                <h3 className="text-xl font-bold text-white mb-2">إدارة القصص</h3>
                 <p className="text-gray-300 text-sm font-semibold">
-                  كتابة وإنشاء قصص جديدة وحديثة
+                  إنشاء وتعديل وحذف القصص
                 </p>
               </Card>
             </motion.div>
@@ -102,14 +102,14 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/forms/create')}
+                onClick={() => router.push('/teacher/forms')}
               >
                 <div className="flex justify-center mb-3">
                   <FileText className="w-16 h-16 text-secondary" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">إنشاء نموذج</h3>
+                <h3 className="text-xl font-bold text-white mb-2">إدارة النماذج</h3>
                 <p className="text-gray-300 text-sm font-semibold">
-                  إنشاء نماذج التحليل والأسئلة
+                  إنشاء وتعديل وحذف النماذج والأسئلة
                 </p>
               </Card>
             </motion.div>

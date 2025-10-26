@@ -43,11 +43,11 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
   return (
     <div className="w-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Base gradient layers */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-900/30 via-transparent to-purple-900/20 pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-900/30 via-transparent to-purple-900/20 pointer-events-none z-0" />
 
       {/* Animated grid background */}
       <svg
-        className="fixed inset-0 w-full h-full opacity-5 pointer-events-none"
+        className="fixed inset-0 w-full h-full opacity-5 pointer-events-none z-0"
         width="100%"
         height="100%"
         xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +64,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       {elements.map((element) => (
         <motion.div
           key={element.id}
-          className="fixed rounded-full pointer-events-none"
+          className="fixed rounded-full pointer-events-none z-0"
           style={{
             top: element.top,
             left: element.left,
@@ -90,7 +90,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
 
       {/* Floating clouds */}
       <motion.div
-        className="fixed top-10 left-1/4 w-64 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"
+        className="fixed top-10 left-1/4 w-64 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none z-0"
         animate={{
           x: [0, 50, 0],
           y: [0, 20, 0],
@@ -103,7 +103,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       />
 
       <motion.div
-        className="fixed bottom-20 right-1/4 w-80 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"
+        className="fixed bottom-20 right-1/4 w-80 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none z-0"
         animate={{
           x: [0, -50, 0],
           y: [0, -20, 0],
@@ -117,7 +117,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       />
 
       <motion.div
-        className="fixed top-1/3 right-1/3 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"
+        className="fixed top-1/3 right-1/3 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none z-0"
         animate={{
           scale: [1, 1.1, 1],
           opacity: [0.5, 0.8, 0.5],
@@ -131,7 +131,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
 
       {/* Floating books */}
       <motion.div
-        className="fixed top-1/4 left-1/3 text-4xl pointer-events-none"
+        className="fixed top-1/4 left-1/3 text-4xl pointer-events-none z-0"
         animate={{
           y: [0, -20, 0],
           rotate: [0, 5, -5, 0],
@@ -146,7 +146,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       </motion.div>
 
       <motion.div
-        className="fixed bottom-1/3 right-1/3 text-4xl pointer-events-none"
+        className="fixed bottom-1/3 right-1/3 text-4xl pointer-events-none z-0"
         animate={{
           y: [0, 25, 0],
           rotate: [0, -8, 8, 0],
@@ -162,7 +162,7 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       </motion.div>
 
       <motion.div
-        className="fixed top-1/2 right-1/4 text-4xl pointer-events-none"
+        className="fixed top-1/2 right-1/4 text-4xl pointer-events-none z-0"
         animate={{
           y: [0, -15, 0],
           rotate: [0, 10, -10, 0],
@@ -178,13 +178,15 @@ export const AnimatedBackground: React.FC<{ children?: React.ReactNode }> = ({ c
       </motion.div>
 
       {/* Gradient orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-b from-blue-500/10 to-transparent rounded-full filter blur-3xl" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-t from-indigo-500/10 to-transparent rounded-full filter blur-3xl" />
       </div>
 
       {/* Content */}
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   )
 }

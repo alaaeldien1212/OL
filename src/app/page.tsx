@@ -116,10 +116,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative overflow-hidden">
-      <AnimatedBackground />
-      
-      <div className="relative z-10 w-full p-2 md:p-4" dir="rtl">
+    <AnimatedBackground>
+      <div className="w-full p-2 md:p-4" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div 
@@ -409,8 +407,13 @@ export default function HomePage() {
                   <h4 className="text-white font-semibold mb-2 text-sm">رموز الدخول التجريبية:</h4>
                   <div className="text-xs text-gray-300 space-y-1">
                     <p><strong>مسؤول:</strong> ADMIN2025</p>
-                    <p><strong>معلم:</strong> TEACH3A2025</p>
-                    <p><strong>طالب:</strong> اطلب من معلمك</p>
+                    <p><strong>معلم:</strong> TEACH3A2025, TEACH4A2025, TEACH6A2025</p>
+                    <div className="border-t border-slate-600 pt-2 mt-2">
+                      <p><strong>طالب:</strong> STUDENT002, STUDENT003</p>
+                      <p className="text-gray-400 text-xs mt-1">
+                        💡 أول دخول يتطلب إدخال الاسم الكامل
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -430,6 +433,6 @@ export default function HomePage() {
           },
         }}
       />
-    </div>
+    </AnimatedBackground>
   )
 }
