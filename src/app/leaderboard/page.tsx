@@ -21,6 +21,7 @@ interface LeaderboardEntry {
   grade?: number
   avg_grade?: number
   graded_submissions?: number
+  total_score?: number
 }
 
 export default function LeaderboardPage() {
@@ -503,11 +504,18 @@ export default function LeaderboardPage() {
                   {selectedStudent.avg_grade && selectedStudent.graded_submissions && (
                     <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-lg p-4 text-center border border-purple-500/30">
                       <Award className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white mb-1">{Math.round(selectedStudent.avg_grade)}%</div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {selectedStudent.total_score ? Math.round(selectedStudent.total_score) : Math.round(selectedStudent.avg_grade)}%
+                      </div>
                       <p className="text-sm text-gray-400">المعدل العام</p>
                       <div className="mt-2 text-xs text-purple-400 font-semibold">
                         {selectedStudent.graded_submissions} تقييم
                       </div>
+                      {selectedStudent.total_score && selectedStudent.avg_grade && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          (يشمل تقييم القراءة الصوتية)
+                        </div>
+                      )}
                     </div>
                   )}
 

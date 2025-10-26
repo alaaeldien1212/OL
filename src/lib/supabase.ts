@@ -309,6 +309,7 @@ export const leaderboardService = {
     }
     
     const processedData = filteredData.map((entry: any) => ({
+      id: entry.student_id,
       student_id: entry.student_id,
       name: entry.student_name,
       stories_read: entry.stories_read,
@@ -318,7 +319,8 @@ export const leaderboardService = {
       current_title: entry.current_title,
       grade: entry.grade,
       avg_grade: entry.avg_grade,
-      graded_submissions: entry.graded_submissions
+      graded_submissions: entry.graded_submissions,
+      total_score: entry.total_score
     }))
     
     console.log('Processed leaderboard data:', processedData.length, 'entries')
