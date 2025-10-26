@@ -32,6 +32,7 @@ interface Question {
   type: 'short_answer' | 'long_answer' | 'multiple_choice'
   required: boolean
   options?: string[]
+  correct_answer?: string
 }
 
 export default function CreateForm() {
@@ -123,6 +124,12 @@ export default function CreateForm() {
     }))
   }
 
+  const setCorrectAnswer = (questionId: string, correctAnswer: string) => {
+    setQuestions(questions.map(q => 
+      q.id === questionId ? { ...q, correct_answer: correctAnswer } : q
+    ))
+  }
+
   const removeOption = (questionId: string, optionIndex: number) => {
     setQuestions(questions.map(q => {
       if (q.id === questionId && q.options) {
@@ -163,6 +170,7 @@ export default function CreateForm() {
         type: q.type,
         required: q.required,
         options: q.type === 'multiple_choice' ? q.options : undefined,
+        correct_answer: q.type === 'multiple_choice' ? q.correct_answer : undefined,
       }))
 
       // Use the new teacher_create_form function
@@ -425,6 +433,29 @@ export default function CreateForm() {
                               إضافة خيار
                             </Button>
                           </div>
+                          
+                          {/* Correct Answer Selector */}
+                          {(question.options || []).length > 0 && (
+                            <div className="mt-4">
+                              <label className="block text-gray-300 font-semibold mb-2 flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                الإجابة الصحيحة
+                              </label>
+                              <select
+                                value={question.correct_answer || ''}
+                                onChange={(e) => setCorrectAnswer(question.id, e.target.value)}
+                                className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
+                                disabled={isSubmitting}
+                              >
+                                <option value="">اختر الإجابة الصحيحة</option>
+                                {(question.options || []).map((option, idx) => (
+                                  <option key={idx} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                         </div>
                       )}
 

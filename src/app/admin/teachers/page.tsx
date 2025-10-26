@@ -167,30 +167,31 @@ export default function AdminTeacherManagement() {
           className="max-w-6xl mx-auto"
         >
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <Users className="w-10 h-10 text-primary" />
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6 md:mb-8">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 flex items-center gap-2 md:gap-3">
+                <Users className="w-8 h-8 md:w-10 md:h-10 text-primary flex-shrink-0" />
                 إدارة المعلمين
               </h1>
-              <p className="text-gray-300 text-lg font-semibold">
+              <p className="text-gray-300 text-sm md:text-lg font-semibold">
                 إدارة حسابات المعلمين والصلاحيات
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <Button
                 onClick={() => setShowCreateForm(true)}
                 variant="primary"
-                size="md"
-                icon={<Plus className="w-5 h-5" />}
+                size="sm"
+                className="flex-1 md:flex-none"
+                icon={<Plus className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 إضافة معلم
               </Button>
               <Button
                 onClick={() => router.back()}
                 variant="ghost"
-                size="md"
-                icon={<ArrowLeft className="w-5 h-5" />}
+                size="sm"
+                icon={<ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 العودة
               </Button>
@@ -299,10 +300,10 @@ export default function AdminTeacherManagement() {
           )}
 
           {/* Teachers List */}
-          <Card>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">قائمة المعلمين</h2>
-              <div className="text-gray-300 font-semibold">
+          <Card className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-0 mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-white">قائمة المعلمين</h2>
+              <div className="text-gray-300 text-sm md:text-base font-semibold">
                 إجمالي المعلمين: {teachers.length}
               </div>
             </div>
@@ -326,20 +327,20 @@ export default function AdminTeacherManagement() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`p-6 rounded-lg border-2 transition-all ${
+                    className={`p-4 md:p-6 rounded-lg border-2 transition-all ${
                       teacher.is_active
                         ? 'border-slate-700 bg-slate-800/50'
                         : 'border-red-500/50 bg-red-900/20'
                     }`}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <GraduationCap className="w-6 h-6 text-primary" />
-                          <h3 className="text-xl font-bold text-white">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                          <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
+                          <h3 className="text-base md:text-xl font-bold text-white truncate">
                             {teacher.name}
                           </h3>
-                          <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                          <span className={`px-2 py-1 rounded-full text-xs md:text-sm font-bold flex-shrink-0 ${
                             teacher.is_active
                               ? 'bg-accent-green text-white'
                               : 'bg-accent-red text-white'
@@ -348,7 +349,7 @@ export default function AdminTeacherManagement() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm">
                           <div className="flex items-center gap-2">
                             <Shield className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-300">الصلاحية:</span>
@@ -376,12 +377,12 @@ export default function AdminTeacherManagement() {
                           </div>
                         </div>
 
-                        <div className="mt-4 p-3 bg-slate-900 rounded-lg">
+                        <div className="mt-3 md:mt-4 p-2 md:p-3 bg-slate-900 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-gray-400 font-semibold">رمز الوصول:</span>
+                            <span className="text-gray-400 text-xs md:text-sm font-semibold">رمز الوصول:</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <code className="bg-slate-800 px-3 py-2 rounded text-primary font-mono text-lg">
+                          <div className="flex items-center gap-2 overflow-x-auto">
+                            <code className="bg-slate-800 px-2 md:px-3 py-1 md:py-2 rounded text-primary font-mono text-sm md:text-lg">
                               {teacher.access_code}
                             </code>
                             <Button
@@ -396,20 +397,24 @@ export default function AdminTeacherManagement() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-row md:flex-col gap-2">
                         <Button
                           onClick={() => toggleTeacherStatus(teacher.id, teacher.is_active)}
                           variant={teacher.is_active ? 'secondary' : 'primary'}
                           size="sm"
-                          icon={teacher.is_active ? <Eye className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                          className="flex-1 md:flex-none"
+                          icon={teacher.is_active ? <Eye className="w-3 h-3 md:w-4 md:h-4" /> : <Activity className="w-3 h-3 md:w-4 md:h-4" />}
                         >
-                          {teacher.is_active ? 'إلغاء التفعيل' : 'تفعيل'}
+                          <span className="text-xs md:text-sm">
+                            {teacher.is_active ? 'إلغاء التفعيل' : 'تفعيل'}
+                          </span>
                         </Button>
                         <Button
-                            onClick={() => deleteTeacher(teacher.id, teacher.name)}
+                          onClick={() => deleteTeacher(teacher.id, teacher.name)}
                           variant="ghost"
                           size="sm"
-                          icon={<Trash2 className="w-4 h-4" />}
+                          className="flex-1 md:flex-none"
+                          icon={<Trash2 className="w-3 h-3 md:w-4 md:h-4" />}
                         >
                           حذف
                         </Button>

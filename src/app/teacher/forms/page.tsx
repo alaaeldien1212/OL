@@ -559,6 +559,7 @@ function EditQuestionForm({ question, onSave, onCancel }: {
   const [type, setType] = useState(question.type)
   const [required, setRequired] = useState(question.required)
   const [options, setOptions] = useState(question.options || [])
+  const [correctAnswer, setCorrectAnswer] = useState(question.correct_answer || '')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -566,7 +567,8 @@ function EditQuestionForm({ question, onSave, onCancel }: {
       text_arabic: text,
       type,
       required,
-      options: type === 'multiple_choice' ? options : []
+      options: type === 'multiple_choice' ? options : [],
+      correct_answer: type === 'multiple_choice' ? correctAnswer : undefined
     })
   }
 
@@ -628,6 +630,24 @@ function EditQuestionForm({ question, onSave, onCancel }: {
           >
             + إضافة خيار
           </Button>
+        </div>
+      )}
+
+      {type === 'multiple_choice' && options.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-sm text-gray-300">الإجابة الصحيحة:</label>
+          <select
+            value={correctAnswer}
+            onChange={(e) => setCorrectAnswer(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-600 rounded bg-slate-900 text-white text-sm"
+          >
+            <option value="">اختر الإجابة الصحيحة</option>
+            {options.map((option: string, idx: number) => (
+              <option key={idx} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
