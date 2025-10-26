@@ -352,7 +352,7 @@ export default function StoryReader() {
           onMouseMove={() => setShowControls(true)}
         >
           {/* Story Content */}
-          <div className="w-full h-full flex flex-col items-center justify-start overflow-auto p-4 md:p-12 pt-20 pb-32 md:pt-12 md:pb-40">
+          <div className="w-full h-full flex flex-col items-center justify-start overflow-auto p-4 md:p-12 pt-20 pb-48 md:pt-12 md:pb-60">
             <div className="max-w-4xl w-full mt-8 md:mt-0">
               {/* Story Header */}
               <motion.div
