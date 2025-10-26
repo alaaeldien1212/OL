@@ -504,18 +504,24 @@ export default function LeaderboardPage() {
                   {selectedStudent.avg_grade && selectedStudent.graded_submissions && (
                     <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-lg p-4 text-center border border-purple-500/30">
                       <Award className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white mb-1">
-                        {selectedStudent.total_score ? Math.round(selectedStudent.total_score) : Math.round(selectedStudent.avg_grade)}%
-                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">{Math.round(selectedStudent.avg_grade)}%</div>
                       <p className="text-sm text-gray-400">المعدل العام</p>
                       <div className="mt-2 text-xs text-purple-400 font-semibold">
                         {selectedStudent.graded_submissions} تقييم
                       </div>
-                      {selectedStudent.total_score && selectedStudent.avg_grade && (
-                        <div className="mt-1 text-xs text-gray-500">
-                          (يشمل تقييم القراءة الصوتية)
-                        </div>
-                      )}
+                    </div>
+                  )}
+
+                  {/* Grade Info */}
+                  {selectedStudent.avg_grade && (
+                    <div className="bg-slate-800/50 rounded-lg p-4 text-sm text-gray-300 border border-slate-700">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Award className="w-5 h-5 text-blue-400" />
+                        <span className="font-semibold text-white">ملاحظة عن التقييم:</span>
+                      </div>
+                      <p className="text-xs">
+                        يشمل تقييم النموذج (الإجابات المكتوبة) والتقييم الصوتي (قراءة الطالب)
+                      </p>
                     </div>
                   )}
 

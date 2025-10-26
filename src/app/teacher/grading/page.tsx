@@ -340,6 +340,50 @@ export default function GradingPage() {
                       <p className="text-white">{selectedSubmission.form_title}</p>
                     </div>
 
+                    {/* Existing Grades Display */}
+                    {(selectedSubmission.grade !== null || selectedSubmission.voice_grade !== null) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedSubmission.grade !== null && (
+                          <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-lg p-3 border border-blue-500/30">
+                            <label className="block text-blue-300 font-semibold mb-1 text-xs">
+                              تقييم النموذج
+                            </label>
+                            <p className="text-white font-bold text-lg">{selectedSubmission.grade}/100</p>
+                          </div>
+                        )}
+                        {selectedSubmission.voice_grade !== null && (
+                          <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-lg p-3 border border-purple-500/30">
+                            <label className="block text-purple-300 font-semibold mb-1 text-xs">
+                              تقييم القراءة الصوتية
+                            </label>
+                            <p className="text-white font-bold text-lg">{selectedSubmission.voice_grade}/100</p>
+                          </div>
+                        )}
+                        {selectedSubmission.grade !== null && selectedSubmission.voice_grade !== null && (
+                          <div className="col-span-2 bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-lg p-3 border border-green-500/30 text-center">
+                            <label className="block text-green-300 font-semibold mb-1 text-xs">
+                              المعدل النهائي
+                            </label>
+                            <p className="text-white font-bold text-xl">
+                              {Math.round((selectedSubmission.grade + selectedSubmission.voice_grade) / 2)}/100
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Feedback Display */}
+                    {selectedSubmission.feedback && (
+                      <div>
+                        <label className="block text-gray-300 font-semibold mb-2">
+                          التعليق
+                        </label>
+                        <div className="bg-slate-800 p-3 rounded-lg text-white text-sm">
+                          {selectedSubmission.feedback}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Answers */}
                     <div>
                       <label className="block text-gray-300 font-semibold mb-2">
@@ -418,57 +462,21 @@ export default function GradingPage() {
                       </div>
                     )}
 
-                    {/* AI Grade Display (if exists) */}
-                    {selectedSubmission.grade !== null && selectedSubmission.grade !== undefined && (
-                      <div className="bg-gradient-to-r from-primary/20 to-accent-green/20 p-4 rounded-lg border-2 border-primary/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="block text-gray-300 font-semibold">
-                            🤖 تقييم الذكاء الاصطناعي
-                          </label>
-                          <span className="text-2xl font-bold text-accent-green">
-                            {selectedSubmission.grade}/100
-                          </span>
-                        </div>
-                        {selectedSubmission.feedback && (
-                          <p className="text-sm text-gray-400 mt-2">
-                            {selectedSubmission.feedback}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Voice Grade Display (if graded) */}
-                    {selectedSubmission.voice_grade !== null && selectedSubmission.voice_grade !== undefined && (
-                      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-4 rounded-lg border-2 border-purple-500/30">
-                        <div className="flex items-center justify-between">
-                          <label className="block text-gray-300 font-semibold">
-                            🎤 تقييم القراءة الصوتية
-                          </label>
-                          <span className="text-2xl font-bold text-purple-400">
-                            {selectedSubmission.voice_grade}/100
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Manual Grade Adjustment (only show if teacher wants to override AI grade) */}
-                    {selectedSubmission.grade === null && (
-                      <div>
-                        <label className="block text-gray-300 font-semibold mb-2">
-                          الدرجة النهائية (0-100)
-                        </label>
-                        <input
-                          type="number"
-                          value={grade}
-                          onChange={(e) => setGrade(e.target.value)}
-                          min="0"
-                          max="100"
-                          className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
-                          disabled={isGrading}
-                          placeholder="إذا كنت تريد تعديل تقييم الذكاء الاصطناعي"
-                        />
-                      </div>
-                    )}
+                    {/* Grade Input */}
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-2">
+                        الدرجة (0-100)
+                      </label>
+                      <input
+                        type="number"
+                        value={grade}
+                        onChange={(e) => setGrade(e.target.value)}
+                        min="0"
+                        max="100"
+                        className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
+                        disabled={isGrading}
+                      />
+                    </div>
 
                     {/* Feedback */}
                     <div>

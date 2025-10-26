@@ -16,7 +16,9 @@ import {
   Users, 
   BookOpen,
   Save,
-  X
+  X,
+  Award,
+  FileText
 } from 'lucide-react'
 
 interface Grade {
@@ -34,11 +36,24 @@ interface GradeStats {
   stories_count: number
 }
 
+interface Submission {
+  id: string
+  student_name: string
+  student_access_code: string
+  story_title: string
+  form_title: string
+  grade?: number
+  voice_grade?: number
+  submitted_at: string
+  feedback?: string
+}
+
 export default function GradeManagement() {
   const router = useRouter()
   const { user, userRole } = useAppStore()
   const [grades, setGrades] = useState<Grade[]>([])
   const [gradeStats, setGradeStats] = useState<GradeStats[]>([])
+  const [submissions, setSubmissions] = useState<Submission[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingGrade, setEditingGrade] = useState<Grade | null>(null)
@@ -73,9 +88,60 @@ export default function GradeManagement() {
       })) || []
 
       setGrades(gradesData)
+
+      // Load all submissions with grades
+      const { data: subsData, error: subsError } = await supabase
+        .from('student_submissions')
+        .select(`
+          id,
+          grade,
+          voice_grade,
+          submitted_at,
+          feedback_arabic,
+          students!inner(name, access_code),
+          form_templates!inner(title_arabic, story_id)
+        `)
+        .order('submitted_at', { ascending: false })
+
+      if (subsError) {
+        console.error('Error loading submissions:', subsError)
+        setSubmissions([])
+      } else {
+        // Get story titles separately
+        const submissionPromises = (subsData || []).map(async (sub: any) => {
+          let storyTitle = 'Unknown'
+          
+          if (sub.form_templates?.story_id) {
+            const { data: storyData } = await supabase
+              .from('stories')
+              .select('title_arabic')
+              .eq('id', sub.form_templates.story_id)
+              .single()
+            
+            if (storyData) {
+              storyTitle = storyData.title_arabic
+            }
+          }
+
+          return {
+            id: sub.id,
+            student_name: sub.students?.name || 'Unknown',
+            student_access_code: sub.students?.access_code || 'Unknown',
+            story_title: storyTitle,
+            form_title: sub.form_templates?.title_arabic || 'Unknown',
+            grade: sub.grade,
+            voice_grade: sub.voice_grade,
+            submitted_at: sub.submitted_at,
+            feedback: sub.feedback_arabic
+          }
+        })
+
+        const formattedSubmissions = await Promise.all(submissionPromises)
+        setSubmissions(formattedSubmissions)
+      }
     } catch (error) {
       console.error('Error loading grades:', error)
-      toast.error('فشل تحميل الصفوف')
+      toast.error('فشل تحميل البيانات')
     } finally {
       setIsLoading(false)
     }
@@ -367,6 +433,97 @@ export default function GradeManagement() {
               إضافة صف جديد
             </Button>
           </Card>
+        )}
+
+        {/* Submissions Section */}
+        {submissions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12"
+          >
+            <Card className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Award className="w-8 h-8 text-primary" />
+                <div>
+                  <h2 className="text-3xl font-bold text-white">جميع التقييمات المسجلة</h2>
+                  <p className="text-gray-300">عرض جميع إجابات الطلاب وتقييماتهم</p>
+                </div>
+              </div>
+
+              {/* Submissions Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-slate-700">
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">الطالب</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">القصة</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">النموذج</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">تقييم النموذج</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">تقييم الصوت</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">المعدل النهائي</th>
+                      <th className="text-right py-4 px-4 text-sm font-bold text-gray-300">التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {submissions.map((submission, index) => {
+                      const finalGrade = submission.grade !== null && submission.grade !== undefined && 
+                                         submission.voice_grade !== null && submission.voice_grade !== undefined
+                                         ? Math.round((submission.grade + submission.voice_grade) / 2)
+                                         : submission.grade ?? submission.voice_grade ?? null
+
+                      return (
+                        <motion.tr
+                          key={submission.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="border-b border-slate-700 hover:bg-slate-800/50 transition-colors"
+                        >
+                          <td className="py-4 px-4">
+                            <div className="font-bold text-white">{submission.student_name}</div>
+                            <div className="text-xs text-gray-400">{submission.student_access_code}</div>
+                          </td>
+                          <td className="py-4 px-4 text-gray-300">{submission.story_title}</td>
+                          <td className="py-4 px-4 text-gray-300">{submission.form_title}</td>
+                          <td className="py-4 px-4">
+                            {submission.grade !== null && submission.grade !== undefined ? (
+                              <span className="text-blue-400 font-bold">{submission.grade}/100</span>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4">
+                            {submission.voice_grade !== null && submission.voice_grade !== undefined ? (
+                              <span className="text-purple-400 font-bold">{submission.voice_grade}/100</span>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4">
+                            {finalGrade !== null ? (
+                              <span className={`font-bold ${
+                                finalGrade >= 90 ? 'text-green-400' :
+                                finalGrade >= 70 ? 'text-blue-400' :
+                                finalGrade >= 50 ? 'text-yellow-400' : 'text-red-400'
+                              }`}>
+                                {finalGrade}/100
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 text-gray-400 text-sm">
+                            {new Date(submission.submitted_at).toLocaleDateString('ar-SA')}
+                          </td>
+                        </motion.tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
         )}
       </div>
     </div>

@@ -11,8 +11,8 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-ink hover:bg-yellow-500 active:bg-yellow-600',
         success: 'bg-accent-green text-white hover:bg-green-600 active:bg-green-700',
         danger: 'bg-accent-red text-white hover:bg-red-600 active:bg-red-700',
-        outline: 'border-2 border-primary text-primary hover:bg-blue-50 active:bg-blue-100',
-        ghost: 'text-ink hover:bg-gray-100 active:bg-gray-200',
+        outline: 'border-2 border-primary text-white hover:bg-blue-600/20 active:bg-blue-600/30',
+        ghost: 'text-white hover:bg-gray-800 active:bg-gray-700',
       },
       size: {
         xs: 'px-3 py-1 text-xs',

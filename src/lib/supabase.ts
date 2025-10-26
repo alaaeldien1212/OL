@@ -149,6 +149,59 @@ export const storiesService = {
     if (error) throw error
     return data
   },
+
+  async getTeacherStories(teacherAccessCode: string) {
+    try {
+      await authService.loginWithAccessCode(teacherAccessCode)
+      
+      const { data, error } = await supabase.rpc('teacher_get_stories', {
+        teacher_access_code: teacherAccessCode
+      })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error in getTeacherStories:', error)
+      throw error
+    }
+  },
+
+  async updateStory(teacherAccessCode: string, storyId: string, updates: any) {
+    try {
+      await authService.loginWithAccessCode(teacherAccessCode)
+      
+      const { data, error } = await supabase.rpc('teacher_update_story', {
+        teacher_access_code: teacherAccessCode,
+        story_uuid: storyId,
+        title_arabic: updates.title_arabic,
+        content_arabic: updates.content_arabic,
+        difficulty: updates.difficulty
+      })
+
+      if (error) throw error
+      return data?.[0] || null
+    } catch (error) {
+      console.error('Error in updateStory:', error)
+      throw error
+    }
+  },
+
+  async deleteStory(teacherAccessCode: string, storyId: string) {
+    try {
+      await authService.loginWithAccessCode(teacherAccessCode)
+      
+      const { data, error } = await supabase.rpc('teacher_delete_story', {
+        teacher_access_code: teacherAccessCode,
+        story_uuid: storyId
+      })
+
+      if (error) throw error
+      return data?.[0] || null
+    } catch (error) {
+      console.error('Error in deleteStory:', error)
+      throw error
+    }
+  },
 }
 
 export const storageService = {
@@ -287,6 +340,21 @@ export const gradingService = {
   },
 }
 
+export const studentSubmissionsService = {
+  async getStudentSubmissions(studentAccessCode: string) {
+    const { data, error } = await supabase.rpc('student_get_submissions', {
+      student_access_code: studentAccessCode
+    })
+
+    if (error) {
+      console.error('Error loading student submissions:', error)
+      throw error
+    }
+
+    return data || []
+  },
+}
+
 export const leaderboardService = {
   async getLeaderboard(classroomId?: string) {
     console.log('Loading leaderboard data...')
@@ -309,7 +377,6 @@ export const leaderboardService = {
     }
     
     const processedData = filteredData.map((entry: any) => ({
-      id: entry.student_id,
       student_id: entry.student_id,
       name: entry.student_name,
       stories_read: entry.stories_read,

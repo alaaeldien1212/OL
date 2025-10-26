@@ -202,7 +202,7 @@ export default function StoryForm() {
         <div className="w-full h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <div className="text-6xl mb-4 animate-bounce">📝</div>
-            <p className="text-2xl font-bold text-ink">جاري تحميل الأسئلة...</p>
+            <p className="text-2xl font-bold text-white">جاري تحميل الأسئلة...</p>
           </div>
         </div>
       </AnimatedBackground>
@@ -215,7 +215,7 @@ export default function StoryForm() {
         <div className="w-full h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <div className="text-6xl mb-4">❌</div>
-            <p className="text-2xl font-bold text-ink">لا يوجد نموذج أسئلة لهذه القصة</p>
+            <p className="text-2xl font-bold text-white">لا يوجد نموذج أسئلة لهذه القصة</p>
             <Button onClick={() => router.push('/student')} className="mt-4">
               العودة للصفحة الرئيسية
             </Button>
@@ -237,11 +237,11 @@ export default function StoryForm() {
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-ink flex items-center gap-3">
+              <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
                 <BookOpen className="w-10 h-10 text-accent-green" />
                 {formTemplate.title_arabic}
               </h1>
-              <p className="text-gray-600 text-lg mt-2">{formTemplate.description_arabic}</p>
+              <p className="text-gray-200 text-lg mt-2">{formTemplate.description_arabic}</p>
             </div>
             <Button
               onClick={() => router.back()}
@@ -264,11 +264,11 @@ export default function StoryForm() {
               >
                 <Card elevation="sm" padding="lg">
                   <div className="mb-4">
-                    <h3 className="text-xl font-bold text-ink mb-2">
+                    <h3 className="text-xl font-bold text-white mb-2">
                       السؤال {index + 1}
                       {question.required && <span className="text-accent-red mr-2">*</span>}
                     </h3>
-                    <p className="text-lg text-gray-700 mb-4">{question.text_arabic}</p>
+                    <p className="text-lg text-gray-200 mb-4">{question.text_arabic}</p>
                   </div>
 
                   {question.type === 'short_answer' && (
@@ -306,7 +306,7 @@ export default function StoryForm() {
                             className="w-5 h-5 text-primary"
                             disabled={isSubmitting}
                           />
-                          <span className="text-lg text-gray-700">{option}</span>
+                          <span className="text-lg text-gray-200">{option}</span>
                         </label>
                       ))}
                     </div>
@@ -345,7 +345,7 @@ export default function StoryForm() {
           >
             <Card elevation="sm" padding="md">
               <div className="text-center">
-                <p className="text-gray-600 mb-2">تقدم الإجابة</p>
+                <p className="text-gray-200 mb-2">تقدم الإجابة</p>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <motion.div
                     className="bg-gradient-to-r from-primary to-secondary h-3 rounded-full"
@@ -356,7 +356,7 @@ export default function StoryForm() {
                     transition={{ duration: 0.5 }}
                   />
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-gray-200 mt-2">
                   {Object.values(answers).filter(answer => answer.trim() !== '').length} من {formTemplate.questions.length} أسئلة
                 </p>
               </div>

@@ -234,7 +234,7 @@ export default function StoryReader() {
         <div className="w-full h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <div className="text-6xl mb-4 animate-bounce">📚</div>
-            <p className="text-2xl font-bold text-ink">جاري تحميل القصة...</p>
+            <p className="text-2xl font-bold text-white">جاري تحميل القصة...</p>
           </div>
         </div>
       </AnimatedBackground>
@@ -247,7 +247,7 @@ export default function StoryReader() {
         <div className="w-full h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <div className="text-6xl mb-4">❌</div>
-            <p className="text-2xl font-bold text-ink">لم يتم العثور على القصة</p>
+            <p className="text-2xl font-bold text-white">لم يتم العثور على القصة</p>
             <Button onClick={() => router.push('/student')} className="mt-4">
               العودة للصفحة الرئيسية
             </Button>
@@ -277,10 +277,10 @@ export default function StoryReader() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center mb-8"
               >
-                <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4 font-arabic">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 font-arabic">
                   {story.title_arabic}
                 </h1>
-                <p className="text-gray-600 text-lg mb-4">قصة جميلة ومفيدة</p>
+                <p className="text-gray-200 text-lg mb-4">قصة جميلة ومفيدة</p>
                 <div className="flex justify-center gap-4">
                   <span className={`px-4 py-2 text-white rounded-full font-bold ${
                     story.difficulty === 'easy' ? 'bg-accent-green' :
@@ -429,7 +429,7 @@ export default function StoryReader() {
             >
               {/* Header */}
               <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-ink">
+                <h1 className="text-3xl md:text-4xl font-bold text-white">
                   {story.title_arabic} 📖
                 </h1>
                 <Button
@@ -445,7 +445,7 @@ export default function StoryReader() {
               <Card className="mb-6" elevation="sm">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-gray-600">وقت القراءة</p>
+                    <p className="text-gray-200">وقت القراءة</p>
                     <p className="text-2xl font-bold text-primary">{formatTime(readingTime)}</p>
                   </div>
                   <div className="text-center">
@@ -475,7 +475,7 @@ export default function StoryReader() {
               {/* Progress Bar */}
               <Card elevation="sm" padding="lg" className="mb-6">
                 <div className="mb-3">
-                  <p className="text-gray-600 mb-2">تقدم القراءة</p>
+                  <p className="text-gray-200 mb-2">تقدم القراءة</p>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <motion.div
                       className="bg-gradient-to-r from-primary to-secondary h-3 rounded-full"
@@ -485,14 +485,14 @@ export default function StoryReader() {
                     />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">٣ من ٤ فقرات</p>
+                <p className="text-sm text-gray-200">٣ من ٤ فقرات</p>
               </Card>
 
               {/* Voice Recording Card */}
               <Card elevation="md" padding="lg" className="mb-6">
                 <div className="mb-4">
-                  <h3 className="text-xl font-bold text-ink mb-2">🎤 تسجيل القراءة</h3>
-                  <p className="text-gray-600 text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
+                  <h3 className="text-xl font-bold text-white mb-2">🎤 تسجيل القراءة</h3>
+                  <p className="text-gray-200 text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
                 </div>
 
                 {/* Recording Status */}

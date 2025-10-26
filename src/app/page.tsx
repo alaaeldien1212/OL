@@ -21,7 +21,6 @@ interface LeaderboardEntry {
   current_title?: string
   avg_grade?: number
   graded_submissions?: number
-  total_score?: number
 }
 
 export default function HomePage() {

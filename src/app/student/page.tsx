@@ -110,7 +110,7 @@ export default function StudentDashboard() {
         <div className="w-full h-full flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <div className="text-6xl mb-4 animate-bounce">📚</div>
-            <p className="text-2xl font-bold text-ink">جاري التحميل...</p>
+            <p className="text-2xl font-bold text-white">جاري التحميل...</p>
           </div>
         </div>
       </AnimatedBackground>
@@ -131,18 +131,27 @@ export default function StudentDashboard() {
         >
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-ink mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                 أهلاً {studentName} 👋
               </h1>
-              <p className="text-gray-600 text-lg">رحباً بك في مكتبة القصص الحديثة</p>
+              <p className="text-gray-200 text-lg">رحباً بك في مكتبة القصص الحديثة</p>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="md"
-            >
-              تسجيل خروج
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => router.push('/student/submissions')}
+                variant="primary"
+                size="md"
+              >
+                درجاتي
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="md"
+              >
+                تسجيل خروج
+              </Button>
+            </div>
           </div>
 
           {/* Stats */}
@@ -154,7 +163,7 @@ export default function StudentDashboard() {
             >
               <Card className="text-center" elevation="sm">
                 <div className="text-5xl mb-2">📖</div>
-                <p className="text-gray-600 text-sm mb-1">القصص المقروءة</p>
+                <p className="text-gray-200 text-sm mb-1">القصص المقروءة</p>
                 <p className="text-3xl font-bold text-primary">{stats.storiesRead}</p>
               </Card>
             </motion.div>
@@ -166,7 +175,7 @@ export default function StudentDashboard() {
             >
               <Card className="text-center" elevation="sm">
                 <div className="text-5xl mb-2">✏️</div>
-                <p className="text-gray-600 text-sm mb-1">النماذج المرسلة</p>
+                <p className="text-gray-200 text-sm mb-1">النماذج المرسلة</p>
                 <p className="text-3xl font-bold text-accent-green">{stats.formsSubmitted}</p>
               </Card>
             </motion.div>
@@ -180,7 +189,7 @@ export default function StudentDashboard() {
             >
               <Card className="text-center hover:shadow-hover transition-all" elevation="sm">
                 <div className="text-5xl mb-2">👑</div>
-                <p className="text-gray-600 text-sm mb-1">إنجازك الحالي</p>
+                <p className="text-gray-200 text-sm mb-1">إنجازك الحالي</p>
                 <p className="text-lg font-bold text-secondary">{stats.titleName}</p>
               </Card>
             </motion.div>
@@ -195,15 +204,15 @@ export default function StudentDashboard() {
           className="max-w-7xl mx-auto"
         >
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-ink mb-2">🌟 القصص المتاحة</h2>
-            <p className="text-gray-600 text-lg">اختر قصة واستمتع برحلة القراءة</p>
+            <h2 className="text-3xl font-bold text-white mb-2">🌟 القصص المتاحة</h2>
+            <p className="text-gray-200 text-lg">اختر قصة واستمتع برحلة القراءة</p>
           </div>
 
           {stories.length === 0 ? (
             <Card className="text-center py-12">
               <div className="text-6xl mb-4">📚</div>
-              <h3 className="text-2xl font-bold text-ink mb-2">لا توجد قصص متاحة حالياً</h3>
-              <p className="text-gray-600">يرجى الاتصال بمعلمك لإنشاء قصص جديدة</p>
+              <h3 className="text-2xl font-bold text-white mb-2">لا توجد قصص متاحة حالياً</h3>
+              <p className="text-gray-200">يرجى الاتصال بمعلمك لإنشاء قصص جديدة</p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -237,8 +246,8 @@ export default function StudentDashboard() {
             elevation="md"
           >
             <div className="text-5xl mb-4">🎯</div>
-            <h3 className="text-2xl font-bold text-ink mb-2">هدفك اليومي</h3>
-            <p className="text-gray-600 mb-4">اقرأ قصة واحدة وأرسل نموذج لكسب نقاط!</p>
+            <h3 className="text-2xl font-bold text-white mb-2">هدفك اليومي</h3>
+            <p className="text-gray-200 mb-4">اقرأ قصة واحدة وأرسل نموذج لكسب نقاط!</p>
             <Button size="lg" variant="primary">
               ابدأ الآن
             </Button>

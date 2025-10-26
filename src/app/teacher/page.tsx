@@ -107,7 +107,7 @@ export default function TeacherDashboard() {
                 <div className="flex justify-center mb-3">
                   <FileText className="w-16 h-16 text-secondary" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">النماذج</h3>
+                <h3 className="text-xl font-bold text-white mb-2">إنشاء نموذج</h3>
                 <p className="text-gray-300 text-sm font-semibold">
                   إنشاء نماذج التحليل والأسئلة
                 </p>
@@ -117,7 +117,45 @@ export default function TeacherDashboard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.35 }}
+            >
+              <Card
+                className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
+                onClick={() => router.push('/teacher/forms')}
+              >
+                <div className="flex justify-center mb-3">
+                  <FileText className="w-16 h-16 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">نماذجي</h3>
+                <p className="text-gray-300 text-sm font-semibold">
+                  عرض وتعديل وحذف النماذج
+                </p>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card
+                className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
+                onClick={() => router.push('/teacher/stories')}
+              >
+                <div className="flex justify-center mb-3">
+                  <BookOpen className="w-16 h-16 text-blue-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">قصصي</h3>
+                <p className="text-gray-300 text-sm font-semibold">
+                  عرض وتعديل وحذف القصص
+                </p>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
@@ -136,7 +174,7 @@ export default function TeacherDashboard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.6 }}
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
@@ -155,7 +193,7 @@ export default function TeacherDashboard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.7 }}
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
