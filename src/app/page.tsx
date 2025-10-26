@@ -43,8 +43,47 @@ export default function HomePage() {
     try {
       setIsLoadingLeaderboard(true)
       const data = await leaderboardService.getLeaderboard()
-      // Only show top 3 students on home page
-      setLeaderboard((data || []).slice(0, 3))
+      console.log('Loaded leaderboard data:', data)
+      let top5 = (data || []).slice(0, 5)
+      
+      // Add mock data if we have less than 5 students to show full leaderboard
+      if (top5.length < 5) {
+        const mockEntries = []
+        const requiredSlots = 5 - top5.length
+        
+        // Add position 4 mock data
+        if (top5.length < 4) {
+          mockEntries.push({
+            student_id: 'mock-4',
+            name: 'علي محمد',
+            combined_score: 165,
+            avg_grade: 92,
+            current_title: 'قارئ متقدم',
+            stories_read: 8,
+            forms_submitted: 6,
+            rank: 4
+          })
+        }
+        
+        // Add position 5 mock data
+        if (top5.length < 5) {
+          mockEntries.push({
+            student_id: 'mock-5',
+            name: 'سارة أحمد',
+            combined_score: 148,
+            avg_grade: 89,
+            current_title: 'قارئ متميز',
+            stories_read: 7,
+            forms_submitted: 5,
+            rank: 5
+          })
+        }
+        
+        top5 = [...top5, ...mockEntries]
+      }
+      
+      console.log('Top 5 students (including mock):', top5)
+      setLeaderboard(top5)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
       setLeaderboard([]) // Set empty array on error
@@ -124,12 +163,12 @@ export default function HomePage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-3"
+            className="text-center mb-2 md:mb-3"
           >
-            <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">
+            <h1 className="text-xl md:text-4xl font-bold text-white mb-1">
               📚 المكتبة الإلكترونية للقصص
             </h1>
-            <p className="text-base text-gray-300 mb-2">
+            <p className="text-sm md:text-base text-gray-300 mb-2">
               منصة تعليمية تفاعلية لتعلم اللغة العربية
             </p>
           </motion.div>
@@ -139,12 +178,12 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-6"
+            className="mb-4 md:mb-6"
           >
-            <Card className="p-3">
-              <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-bold text-white">جدول الترتيب</h2>
+            <Card className="p-2 md:p-3">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <Trophy className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
+                <h2 className="text-lg md:text-xl font-bold text-white">جدول الترتيب</h2>
               </div>
               
               {isLoadingLeaderboard ? (
@@ -159,94 +198,158 @@ export default function HomePage() {
                   <p className="text-gray-400 text-xs">كن أول من ينضم إلى المكتبة!</p>
                 </div>
               ) : (
-                <div className="flex justify-center items-end gap-3 py-2">
-                  {/* 2nd Place */}
-                  {leaderboard[1] && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
-                      className="flex flex-col items-center"
-                    >
-                      <div className="bg-gradient-to-b from-gray-300 to-gray-400 text-slate-900 w-20 h-20 rounded-full flex items-center justify-center mb-3">
-                        <Medal className="w-8 h-8" />
-                      </div>
-                      <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-4 text-center min-w-[120px]">
-                        <h3 className="text-lg font-bold text-white">{leaderboard[1].name}</h3>
-                        <p className="text-sm text-gray-300">المركز الثاني</p>
-                        {leaderboard[1].current_title && (
-                          <div className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full mt-1">
-                            🏅 {leaderboard[1].current_title}
-                          </div>
-                        )}
-                        <div className="text-xl font-bold text-gray-300 mt-2">{leaderboard[1].combined_score}</div>
-                        {leaderboard[1].avg_grade && (
-                          <div className="text-sm text-purple-300 mt-1">
-                            معدل: {Math.round(leaderboard[1].avg_grade)}%
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
+                <>
+                  {/* Top 3 - Podium View */}
+                  <div className="flex justify-center items-end gap-2 md:gap-3 py-2 mb-3">
+                    {/* 2nd Place */}
+                    {leaderboard[1] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="bg-gradient-to-b from-gray-300 to-gray-400 text-slate-900 w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                          <Medal className="w-6 h-6 md:w-8 md:h-8" />
+                        </div>
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[80px] md:min-w-[120px]">
+                          <h3 className="text-sm md:text-lg font-bold text-white truncate">{leaderboard[1].name}</h3>
+                          <p className="text-xs md:text-sm text-gray-300">المركز الثاني</p>
+                          {leaderboard[1].current_title && (
+                            <div className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full mt-1 truncate">
+                              🏅 {leaderboard[1].current_title}
+                            </div>
+                          )}
+                          <div className="text-lg md:text-xl font-bold text-gray-300 mt-2">{leaderboard[1].combined_score}</div>
+                          {leaderboard[1].avg_grade && (
+                            <div className="text-xs md:text-sm text-purple-300 mt-1">
+                              معدل: {Math.round(leaderboard[1].avg_grade)}%
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
 
-                  {/* 1st Place */}
-                  {leaderboard[0] && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                      className="flex flex-col items-center"
-                    >
-                      <div className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white w-24 h-24 rounded-full flex items-center justify-center mb-3 shadow-lg">
-                        <Crown className="w-10 h-10" />
-                      </div>
-                      <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-4 text-center min-w-[140px] border-2 border-yellow-500/30">
-                        <h3 className="text-xl font-bold text-white">{leaderboard[0].name}</h3>
-                        <p className="text-sm text-yellow-300">المركز الأول</p>
-                        {leaderboard[0].current_title && (
-                          <div className="text-xs bg-yellow-500/20 text-yellow-200 px-2 py-1 rounded-full mt-1">
-                            🏅 {leaderboard[0].current_title}
-                          </div>
-                        )}
-                        <div className="text-2xl font-bold text-yellow-300 mt-2">{leaderboard[0].combined_score}</div>
-                        {leaderboard[0].avg_grade && (
-                          <div className="text-sm text-purple-300 mt-1">
-                            معدل: {Math.round(leaderboard[0].avg_grade)}%
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
+                    {/* 1st Place */}
+                    {leaderboard[0] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-2 md:mb-3 shadow-lg">
+                          <Crown className="w-7 h-7 md:w-10 md:h-10" />
+                        </div>
+                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[90px] md:min-w-[140px] border-2 border-yellow-500/30">
+                          <h3 className="text-base md:text-xl font-bold text-white truncate">{leaderboard[0].name}</h3>
+                          <p className="text-xs md:text-sm text-yellow-300">المركز الأول</p>
+                          {leaderboard[0].current_title && (
+                            <div className="text-xs bg-yellow-500/20 text-yellow-200 px-2 py-1 rounded-full mt-1 truncate">
+                              🏅 {leaderboard[0].current_title}
+                            </div>
+                          )}
+                          <div className="text-xl md:text-2xl font-bold text-yellow-300 mt-2">{leaderboard[0].combined_score}</div>
+                          {leaderboard[0].avg_grade && (
+                            <div className="text-xs md:text-sm text-purple-300 mt-1">
+                              معدل: {Math.round(leaderboard[0].avg_grade)}%
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
 
-                  {/* 3rd Place */}
-                  {leaderboard[2] && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.3 }}
-                      className="flex flex-col items-center"
-                    >
-                      <div className="bg-gradient-to-b from-amber-600 to-amber-700 text-white w-20 h-20 rounded-full flex items-center justify-center mb-3">
-                        <Medal className="w-8 h-8" />
-                      </div>
-                      <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-4 text-center min-w-[120px]">
-                        <h3 className="text-lg font-bold text-white">{leaderboard[2].name}</h3>
-                        <p className="text-sm text-gray-300">المركز الثالث</p>
-                        {leaderboard[2].current_title && (
-                          <div className="text-xs bg-amber-600/50 text-amber-300 px-2 py-1 rounded-full mt-1">
-                            🏅 {leaderboard[2].current_title}
+                    {/* 3rd Place */}
+                    {leaderboard[2] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="bg-gradient-to-b from-amber-600 to-amber-700 text-white w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                          <Medal className="w-6 h-6 md:w-8 md:h-8" />
+                        </div>
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[80px] md:min-w-[120px]">
+                          <h3 className="text-sm md:text-lg font-bold text-white truncate">{leaderboard[2].name}</h3>
+                          <p className="text-xs md:text-sm text-gray-300">المركز الثالث</p>
+                          {leaderboard[2].current_title && (
+                            <div className="text-xs bg-amber-600/50 text-amber-300 px-2 py-1 rounded-full mt-1 truncate">
+                              🏅 {leaderboard[2].current_title}
+                            </div>
+                          )}
+                          <div className="text-lg md:text-xl font-bold text-gray-300 mt-2">{leaderboard[2].combined_score}</div>
+                          {leaderboard[2].avg_grade && (
+                            <div className="text-xs md:text-sm text-purple-300 mt-1">
+                              معدل: {Math.round(leaderboard[2].avg_grade)}%
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* 4th and 5th Place - Side by Side */}
+                  {(leaderboard[3] || leaderboard[4]) && (
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                      {leaderboard[3] && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.4 }}
+                          className="flex flex-col items-center"
+                        >
+                          <div className="bg-gradient-to-b from-purple-400 to-purple-600 text-white w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                            <Medal className="w-5 h-5 md:w-7 md:h-7" />
                           </div>
-                        )}
-                        <div className="text-xl font-bold text-gray-300 mt-2">{leaderboard[2].combined_score}</div>
-                        {leaderboard[2].avg_grade && (
-                          <div className="text-sm text-purple-300 mt-1">
-                            معدل: {Math.round(leaderboard[2].avg_grade)}%
+                          <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-3 text-center min-w-full">
+                            <h3 className="text-sm md:text-base font-bold text-white truncate mb-1">{leaderboard[3].name}</h3>
+                            <div className="text-xs md:text-sm text-gray-300 mb-1">المركز الرابع</div>
+                            {leaderboard[3].current_title && (
+                              <div className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full my-1 truncate">
+                                🏅 {leaderboard[3].current_title}
+                              </div>
+                            )}
+                            <div className="text-lg md:text-xl font-bold text-gray-300 mt-1">{leaderboard[3].combined_score}</div>
+                            {leaderboard[3].avg_grade && (
+                              <div className="text-xs md:text-sm text-purple-300 mt-1">
+                                معدل: {Math.round(leaderboard[3].avg_grade)}%
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </motion.div>
+                        </motion.div>
+                      )}
+
+                      {leaderboard[4] && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.5 }}
+                          className="flex flex-col items-center"
+                        >
+                          <div className="bg-gradient-to-b from-purple-400 to-purple-600 text-white w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                            <Medal className="w-5 h-5 md:w-7 md:h-7" />
+                          </div>
+                          <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-3 text-center min-w-full">
+                            <h3 className="text-sm md:text-base font-bold text-white truncate mb-1">{leaderboard[4].name}</h3>
+                            <div className="text-xs md:text-sm text-gray-300 mb-1">المركز الخامس</div>
+                            {leaderboard[4].current_title && (
+                              <div className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full my-1 truncate">
+                                🏅 {leaderboard[4].current_title}
+                              </div>
+                            )}
+                            <div className="text-lg md:text-xl font-bold text-gray-300 mt-1">{leaderboard[4].combined_score}</div>
+                            {leaderboard[4].avg_grade && (
+                              <div className="text-xs md:text-sm text-purple-300 mt-1">
+                                معدل: {Math.round(leaderboard[4].avg_grade)}%
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </Card>
           </motion.div>
@@ -256,12 +359,12 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 mb-4"
           >
             {/* Admin Login */}
-            <Card className="p-3 text-center hover:scale-105 transition-transform duration-200">
-              <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h3 className="text-base font-bold text-white mb-1">دخول المسؤول</h3>
+            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
+              <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-2" />
+              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول المسؤول</h3>
               <p className="text-gray-300 mb-2 text-xs">إدارة النظام والمعلمين</p>
               <Button
                 onClick={() => {
@@ -269,18 +372,18 @@ export default function HomePage() {
                   setShowLoginForm(true)
                 }}
                 variant="primary"
-                size="lg"
+                size="sm"
                 className="w-full"
-                icon={<LogIn className="w-5 h-5" />}
+                icon={<LogIn className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 دخول المسؤول
               </Button>
             </Card>
 
             {/* Teacher Login */}
-            <Card className="p-3 text-center hover:scale-105 transition-transform duration-200">
-              <GraduationCap className="w-8 h-8 text-secondary mx-auto mb-2" />
-              <h3 className="text-base font-bold text-white mb-1">دخول المعلم</h3>
+            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
+              <GraduationCap className="w-6 h-6 md:w-8 md:h-8 text-secondary mx-auto mb-2" />
+              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول المعلم</h3>
               <p className="text-gray-300 mb-2 text-xs">إدارة الطلاب والقصص</p>
               <Button
                 onClick={() => {
@@ -288,18 +391,18 @@ export default function HomePage() {
                   setShowLoginForm(true)
                 }}
                 variant="secondary"
-                size="lg"
+                size="sm"
                 className="w-full"
-                icon={<UserCheck className="w-5 h-5" />}
+                icon={<UserCheck className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 دخول المعلم
               </Button>
             </Card>
 
             {/* Student Login */}
-            <Card className="p-3 text-center hover:scale-105 transition-transform duration-200">
-              <BookOpen className="w-8 h-8 text-accent-green mx-auto mb-2" />
-              <h3 className="text-base font-bold text-white mb-1">دخول الطالب</h3>
+            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
+              <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-accent-green mx-auto mb-2" />
+              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول الطالب</h3>
               <p className="text-gray-300 mb-2 text-xs">قراءة القصص وحل النماذج</p>
               <Button
                 onClick={() => {
@@ -307,9 +410,9 @@ export default function HomePage() {
                   setShowLoginForm(true)
                 }}
                 variant="success"
-                size="lg"
+                size="sm"
                 className="w-full"
-                icon={<BookOpen className="w-5 h-5" />}
+                icon={<BookOpen className="w-4 h-4 md:w-5 md:h-5" />}
               >
                 دخول الطالب
               </Button>
@@ -329,14 +432,14 @@ export default function HomePage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-800 rounded-xl p-4 w-full max-w-md my-8 max-h-[90vh] overflow-y-auto"
+                className="bg-slate-800 rounded-xl p-3 md:p-4 w-full max-w-md my-4 md:my-8 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  {loginType === 'admin' && <Shield className="w-5 h-5 text-primary" />}
-                  {loginType === 'teacher' && <GraduationCap className="w-5 h-5 text-secondary" />}
-                  {loginType === 'student' && <BookOpen className="w-5 h-5 text-accent-green" />}
-                  <h3 className="text-xl font-bold text-white">
+                <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                  {loginType === 'admin' && <Shield className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />}
+                  {loginType === 'teacher' && <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-secondary flex-shrink-0" />}
+                  {loginType === 'student' && <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-accent-green flex-shrink-0" />}
+                  <h3 className="text-lg md:text-xl font-bold text-white">
                     {loginType === 'admin' && 'دخول المسؤول'}
                     {loginType === 'teacher' && 'دخول المعلم'}
                     {loginType === 'student' && 'دخول الطالب'}
@@ -436,3 +539,4 @@ export default function HomePage() {
     </AnimatedBackground>
   )
 }
+

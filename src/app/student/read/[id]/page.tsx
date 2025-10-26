@@ -100,27 +100,88 @@ export default function StoryReader() {
   // Start recording
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      console.log('🔍 Starting recording...')
+      console.log('User agent:', navigator.userAgent)
+      console.log('Has getUserMedia:', !!navigator.mediaDevices?.getUserMedia)
+      console.log('Has MediaRecorder:', typeof MediaRecorder !== 'undefined')
+
+      // Check if MediaRecorder API is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        const errorMsg = 'متصفحك لا يدعم التسجيل الصوتي. استخدم Chrome أو Firefox'
+        console.error('❌ getUserMedia not supported')
+        toast.error(errorMsg)
+        return
+      }
+      
+      // Check if MediaRecorder exists
+      if (typeof MediaRecorder === 'undefined') {
+        const errorMsg = 'متصفحك لا يدعم MediaRecorder. استخدم Chrome أو Firefox'
+        console.error('❌ MediaRecorder not supported')
+        toast.error(errorMsg)
+        return
+      }
+
+      console.log('✅ APIs supported, requesting permission...')
+
+      // Request microphone permission - simplified for better mobile support
+      let stream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: true // Simplified to just request audio, let browser handle the rest
+        })
+        console.log('✅ Permission granted, stream obtained')
+      } catch (permError: any) {
+        console.error('❌ Permission error:', permError)
+        throw permError
+      }
+      
+      // Use MediaRecorder with basic configuration
+      let mimeType = 'audio/webm' // Default
+      
+      // Try to find a supported MIME type - simpler approach
+      try {
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm'
+          console.log('✅ Using audio/webm')
+        } else {
+          console.log('⚠️ audio/webm not supported')
+        }
+      } catch (e) {
+        console.log('⚠️ Could not check MIME type support')
+      }
+      
+      console.log('Creating MediaRecorder with mimeType:', mimeType)
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       
       const chunks: Blob[] = []
       
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           chunks.push(event.data)
+          console.log('📦 Data chunk received:', event.data.size, 'bytes')
         }
       }
       
       mediaRecorder.onstop = () => {
+        console.log('⏹️ Recording stopped, creating blob from', chunks.length, 'chunks')
         const blob = new Blob(chunks, { type: 'audio/webm' })
         const url = URL.createObjectURL(blob)
         setAudioBlob(blob)
         setAudioUrl(url)
         stream.getTracks().forEach(track => track.stop())
+        console.log('✅ Recording saved successfully')
         toast.success('تم حفظ التسجيل! 🎉')
       }
+
+      mediaRecorder.onerror = (event: any) => {
+        console.error('❌ MediaRecorder error:', event)
+        toast.error('حدث خطأ أثناء التسجيل')
+        setIsRecording(false)
+        stream.getTracks().forEach(track => track.stop())
+      }
       
+      console.log('🎙️ Starting MediaRecorder...')
       mediaRecorder.start()
       setIsRecording(true)
       setRecordingDuration(0)
@@ -130,10 +191,31 @@ export default function StoryReader() {
         setRecordingDuration((prev) => prev + 1)
       }, 1000)
       
+      console.log('✅ Recording started successfully')
       toast.success('بدأ التسجيل 🎤')
-    } catch (error) {
-      console.error('Error starting recording:', error)
-      toast.error('فشل في بدء التسجيل. يرجى التأكد من السماح بالوصول للميكروفون.')
+    } catch (error: any) {
+      console.error('❌ Error starting recording:', error)
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      
+      // Detailed error messages for different failure scenarios
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('الرجاء السماح بالوصول للميكروفون. على الجوال: اضغط قفل في العنوان ← الموقع ← السماح', {
+          duration: 6000
+        })
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        toast.error('لم يتم العثور على ميكروفون. تأكد من توصيل ميكروفون')
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        toast.error('الميكروفون مستخدم من قبل تطبيق آخر. أغلقه وحاول مرة أخرى')
+      } else if (error.name === 'OverconstrainedError') {
+        toast.error('إعدادات الميكروفون غير مدعومة')
+      } else if (error.name === 'TypeError' && error.message?.includes('Failed to construct')) {
+        toast.error('المتصفح لا يدعم التسجيل. جرب Chrome أو Firefox على HTTPS')
+      } else {
+        const errorMsg = error.message || error.name || 'خطأ غير معروف'
+        console.error('Unexpected error:', error)
+        toast.error(`فشل: ${errorMsg}`)
+      }
     }
   }
 
@@ -428,14 +510,15 @@ export default function StoryReader() {
               className="max-w-4xl mx-auto"
             >
               {/* Header */}
-              <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <h1 className="text-xl md:text-4xl font-bold text-white">
                   {story.title_arabic} 📖
                 </h1>
                 <Button
                   onClick={() => router.back()}
                   variant="ghost"
-                  size="md"
+                  size="sm"
+                  className="w-full md:w-auto"
                 >
                   العودة
                 </Button>
@@ -443,20 +526,20 @@ export default function StoryReader() {
 
               {/* Info */}
               <Card className="mb-6" elevation="sm">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <p className="text-gray-200">وقت القراءة</p>
-                    <p className="text-2xl font-bold text-primary">{formatTime(readingTime)}</p>
+                    <p className="text-gray-200 text-sm">وقت القراءة</p>
+                    <p className="text-xl md:text-2xl font-bold text-primary">{formatTime(readingTime)}</p>
                   </div>
-                  <div className="text-center">
-                    <span className={`inline-block px-4 py-2 text-white rounded-full font-bold mr-2 ${
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`inline-block px-3 py-1 md:px-4 md:py-2 text-white text-sm rounded-full font-bold ${
                       story.difficulty === 'easy' ? 'bg-accent-green' :
                       story.difficulty === 'medium' ? 'bg-secondary' : 'bg-accent-red'
                     }`}>
                       {story.difficulty === 'easy' ? 'سهل' : 
                        story.difficulty === 'medium' ? 'متوسط' : 'صعب'}
                     </span>
-                    <span className="inline-block px-4 py-2 bg-primary text-white rounded-full font-bold">
+                    <span className="inline-block px-3 py-1 md:px-4 md:py-2 bg-primary text-white text-sm rounded-full font-bold">
                       الصف {story.grade_level}
                     </span>
                   </div>
@@ -465,8 +548,8 @@ export default function StoryReader() {
 
               {/* Story */}
               <Card elevation="md" padding="lg" className="mb-8 overflow-hidden">
-                <div className="text-xl text-right leading-relaxed space-y-4 font-arabic" style={{ lineHeight: '2.2' }}>
-                  <div className="whitespace-pre-wrap bg-gray-50 p-6 rounded-lg border-r-4 border-primary break-words">
+                <div className="text-base md:text-xl text-right leading-relaxed space-y-4 font-arabic" style={{ lineHeight: '2.2' }}>
+                  <div className="whitespace-pre-wrap bg-gray-50 p-3 md:p-6 rounded-lg border-r-4 border-primary break-words">
                     {story.content_arabic}
                   </div>
                 </div>
@@ -491,8 +574,8 @@ export default function StoryReader() {
               {/* Voice Recording Card */}
               <Card elevation="md" padding="lg" className="mb-6">
                 <div className="mb-4">
-                  <h3 className="text-xl font-bold text-white mb-2">🎤 تسجيل القراءة</h3>
-                  <p className="text-gray-200 text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-2">🎤 تسجيل القراءة</h3>
+                  <p className="text-gray-200 text-xs md:text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
                 </div>
 
                 {/* Recording Status */}
@@ -513,15 +596,15 @@ export default function StoryReader() {
                 )}
 
                 {/* Controls */}
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-2 md:gap-3 flex-wrap">
                   {!audioUrl ? (
                     <>
                       {!isRecording ? (
                         <Button
                           onClick={startRecording}
                           variant="primary"
-                          size="lg"
-                          className="flex-1 min-w-[140px]"
+                          size="md"
+                          className="flex-1 min-w-[120px] text-sm md:text-base"
                         >
                           <span className="mr-2">🎤</span>بدء التسجيل
                         </Button>
@@ -529,10 +612,10 @@ export default function StoryReader() {
                         <Button
                           onClick={stopRecording}
                           variant="danger"
-                          size="lg"
-                          className="flex-1 min-w-[140px]"
+                          size="md"
+                          className="flex-1 min-w-[120px] text-sm md:text-base"
                         >
-                          <span className="mr-2">⏹️</span>إيقاف التسجيل
+                          <span className="mr-2">⏹️</span>إيقاف
                         </Button>
                       )}
                     </>
@@ -541,8 +624,8 @@ export default function StoryReader() {
                       <Button
                         onClick={isPlaying ? stopAudio : playAudio}
                         variant={isPlaying ? "secondary" : "primary"}
-                        size="lg"
-                        className="flex-1 min-w-[140px]"
+                        size="md"
+                        className="flex-1 min-w-[120px] text-sm md:text-base"
                       >
                         {isPlaying ? (
                           <>
@@ -557,8 +640,8 @@ export default function StoryReader() {
                       <Button
                         onClick={deleteRecording}
                         variant="ghost"
-                        size="lg"
-                        className="border-2 border-gray-300"
+                        size="md"
+                        className="border-2 border-gray-300 text-sm md:text-base"
                       >
                         <span className="mr-2">🗑️</span>حذف
                       </Button>
@@ -573,20 +656,20 @@ export default function StoryReader() {
               </Card>
 
               {/* Actions */}
-              <div className="flex gap-4">
+              <div className="flex gap-2 md:gap-4">
                 <Button
                   onClick={() => setIsFullScreen(true)}
                   variant="secondary"
-                  size="lg"
-                  className="flex-1"
+                  size="md"
+                  className="flex-1 text-sm md:text-base"
                 >
                   ملء الشاشة
                 </Button>
                 <Button
                   onClick={handleComplete}
                   variant="primary"
-                  size="lg"
-                  className="flex-1"
+                  size="md"
+                  className="flex-1 text-sm md:text-base"
                 >
                   انتهيت من القراءة ✓
                 </Button>

@@ -129,25 +129,27 @@ export default function StudentDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-7xl mx-auto mb-8"
         >
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">
                 أهلاً {studentName} 👋
               </h1>
-              <p className="text-gray-200 text-lg">رحباً بك في مكتبة القصص الحديثة</p>
+              <p className="text-gray-200 text-sm md:text-lg">رحباً بك في مكتبة القصص الحديثة</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <Button
                 onClick={() => router.push('/student/submissions')}
                 variant="primary"
-                size="md"
+                size="sm"
+                className="flex-1 md:flex-none"
               >
                 درجاتي
               </Button>
               <Button
                 onClick={handleLogout}
                 variant="ghost"
-                size="md"
+                size="sm"
+                className="flex-1 md:flex-none"
               >
                 تسجيل خروج
               </Button>
@@ -204,8 +206,8 @@ export default function StudentDashboard() {
           className="max-w-7xl mx-auto"
         >
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">🌟 القصص المتاحة</h2>
-            <p className="text-gray-200 text-lg">اختر قصة واستمتع برحلة القراءة</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">🌟 القصص المتاحة</h2>
+            <p className="text-gray-200 text-sm md:text-lg">اختر قصة واستمتع برحلة القراءة</p>
           </div>
 
           {stories.length === 0 ? (
@@ -215,7 +217,7 @@ export default function StudentDashboard() {
               <p className="text-gray-200">يرجى الاتصال بمعلمك لإنشاء قصص جديدة</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {stories.map((story, index) => (
                 <motion.div
                   key={story.story_id}
@@ -241,14 +243,14 @@ export default function StudentDashboard() {
           transition={{ delay: 0.5 }}
           className="max-w-7xl mx-auto mt-12 mb-8"
         >
-          <Card
-            className="bg-gradient-to-r from-primary/20 to-secondary/20 text-center py-8"
+            <Card
+            className="bg-gradient-to-r from-primary/20 to-secondary/20 text-center py-6 md:py-8"
             elevation="md"
           >
-            <div className="text-5xl mb-4">🎯</div>
-            <h3 className="text-2xl font-bold text-white mb-2">هدفك اليومي</h3>
-            <p className="text-gray-200 mb-4">اقرأ قصة واحدة وأرسل نموذج لكسب نقاط!</p>
-            <Button size="lg" variant="primary">
+            <div className="text-4xl md:text-5xl mb-3 md:mb-4">🎯</div>
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-2">هدفك اليومي</h3>
+            <p className="text-gray-200 mb-4 text-sm md:text-base px-4">اقرأ قصة واحدة وأرسل نموذج لكسب نقاط!</p>
+            <Button size="md" variant="primary" className="text-sm md:text-base">
               ابدأ الآن
             </Button>
           </Card>
