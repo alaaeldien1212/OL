@@ -291,9 +291,10 @@ export default function StoryReader() {
           console.error('Error uploading audio:', error)
           toast.error('فشل تحميل التسجيل الصوتي، سيتم المتابعة بدون تسجيل', { id: 'uploading' })
         }
+      } else {
+        toast.success('تم إكمال قراءة القصة! 🎉')
       }
       
-      toast.success('تم إكمال قراءة القصة! 🎉')
       setTimeout(() => {
         router.push(`/student/submit/${storyId}`)
       }, 1500)
@@ -424,11 +425,11 @@ export default function StoryReader() {
             className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/30 to-transparent flex flex-col items-center gap-4 pointer-events-none"
           >
             {/* Recording Controls */}
-            <div className="flex gap-3 pointer-events-auto">
+            <div className="flex gap-3 pointer-events-auto items-center">
               {isRecording && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg">
+                <div className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-bold">
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  <span className="font-bold">{formatTime(recordingDuration)}</span>
+                  <span>{formatTime(recordingDuration)}</span>
                 </div>
               )}
               {!audioUrl ? (
@@ -446,9 +447,10 @@ export default function StoryReader() {
                     <Button
                       onClick={stopRecording}
                       variant="danger"
-                      size="md"
+                      size="lg"
+                      className="shadow-lg"
                     >
-                      <span className="mr-2">⏹️</span>إيقاف
+                      <span className="mr-2">⏹️</span>إيقاف التسجيل
                     </Button>
                   )}
                 </>
@@ -483,17 +485,20 @@ export default function StoryReader() {
 
             {/* Main Controls */}
             <div className="flex gap-4 pointer-events-auto">
-              <Button
-                onClick={() => setIsFullScreen(false)}
-                variant="secondary"
-                size="lg"
-              >
-                الخروج من ملء الشاشة
-              </Button>
+              {!isRecording && (
+                <Button
+                  onClick={() => setIsFullScreen(false)}
+                  variant="secondary"
+                  size="lg"
+                >
+                  الخروج من ملء الشاشة
+                </Button>
+              )}
               <Button
                 onClick={handleComplete}
                 variant="primary"
                 size="lg"
+                className="shadow-lg"
               >
                 انتهيت من القراءة ✓
               </Button>
