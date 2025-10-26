@@ -47,39 +47,43 @@ export default function HomePage() {
       let top5 = (data || []).slice(0, 5)
       
       // Add mock data if we have less than 5 students to show full leaderboard
-      if (top5.length < 5) {
-        const mockEntries = []
-        const requiredSlots = 5 - top5.length
-        
-        // Add position 4 mock data
-        if (top5.length < 4) {
-          mockEntries.push({
-            student_id: 'mock-4',
-            name: 'علي محمد',
-            combined_score: 165,
-            avg_grade: 92,
-            current_title: 'قارئ متقدم',
-            stories_read: 8,
-            forms_submitted: 6,
-            rank: 4
-          })
+      const mockData = [
+        {
+          student_id: 'mock-3',
+          name: 'محمد عبدالله',
+          combined_score: 128,
+          avg_grade: 87,
+          current_title: 'قارئ نشط',
+          stories_read: 6,
+          forms_submitted: 4,
+          rank: 3
+        },
+        {
+          student_id: 'mock-4',
+          name: 'فاطمة علي',
+          combined_score: 115,
+          avg_grade: 85,
+          current_title: 'قارئ محترف',
+          stories_read: 5,
+          forms_submitted: 3,
+          rank: 4
+        },
+        {
+          student_id: 'mock-5',
+          name: 'خالد أحمد',
+          combined_score: 102,
+          avg_grade: 82,
+          current_title: 'قارئ مبتدئ',
+          stories_read: 4,
+          forms_submitted: 2,
+          rank: 5
         }
-        
-        // Add position 5 mock data
-        if (top5.length < 5) {
-          mockEntries.push({
-            student_id: 'mock-5',
-            name: 'سارة أحمد',
-            combined_score: 148,
-            avg_grade: 89,
-            current_title: 'قارئ متميز',
-            stories_read: 7,
-            forms_submitted: 5,
-            rank: 5
-          })
-        }
-        
-        top5 = [...top5, ...mockEntries]
+      ]
+      
+      // Fill empty positions with mock data
+      while (top5.length < 5) {
+        const mockIndex = top5.length >= 0 && top5.length < 3 ? top5.length : 0
+        top5.push(mockData[mockIndex])
       }
       
       console.log('Top 5 students (including mock):', top5)

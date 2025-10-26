@@ -149,27 +149,32 @@ export default function TeacherStoriesPage() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex justify-between items-center mb-8"
+            className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8"
           >
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <BookOpen className="w-10 h-10 text-primary" />
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                <BookOpen className="w-6 h-6 md:w-10 md:h-10 text-primary" />
                 قصصي
               </h1>
-              <p className="text-gray-200">إدارة القصص التي قمت بإنشائها</p>
+              <p className="text-gray-200 text-sm md:text-base">إدارة القصص التي قمت بإنشائها</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <Button
                 onClick={() => router.push('/teacher/stories/create')}
                 variant="primary"
                 icon={<Plus className="w-4 h-4" />}
+                size="sm"
+                className="flex-1 md:flex-none"
               >
-                قصة جديدة
+                <span className="hidden md:inline">قصة جديدة</span>
+                <span className="md:hidden">جديدة</span>
               </Button>
               <Button
                 onClick={() => router.push('/teacher')}
                 variant="ghost"
                 icon={<ArrowRight className="w-4 h-4" />}
+                size="sm"
+                className="flex-1 md:flex-none"
               >
                 العودة
               </Button>
@@ -184,8 +189,8 @@ export default function TeacherStoriesPage() {
               className="mb-8"
             >
               <Card>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-white">تعديل القصة</h3>
+                <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold text-white">تعديل القصة</h3>
                   <Button
                     onClick={() => {
                       setShowEditForm(false)
@@ -195,7 +200,7 @@ export default function TeacherStoriesPage() {
                     size="sm"
                     icon={<X className="w-4 h-4" />}
                   >
-                    إلغاء
+                    <span className="hidden sm:inline">إلغاء</span>
                   </Button>
                 </div>
 
@@ -225,12 +230,12 @@ export default function TeacherStoriesPage() {
                 onClick={(e) => e.stopPropagation()}
                 className="bg-slate-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
               >
-                <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-6 border-b border-slate-700">
+                <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-4 md:p-6 border-b border-slate-700">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-2xl font-bold text-white mb-2">{viewingStory.title_arabic}</h2>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className={`px-3 py-1 rounded-full font-semibold ${
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg md:text-2xl font-bold text-white mb-2 truncate">{viewingStory.title_arabic}</h2>
+                      <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm flex-wrap">
+                        <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full font-semibold text-xs ${
                           viewingStory.difficulty === 'easy' ? 'bg-accent-green text-white' :
                           viewingStory.difficulty === 'medium' ? 'bg-secondary text-ink' : 'bg-accent-red text-white'
                         }`}>
@@ -244,13 +249,14 @@ export default function TeacherStoriesPage() {
                       variant="ghost"
                       size="sm"
                       icon={<X className="w-4 h-4" />}
+                      className="flex-shrink-0 ml-2"
                     >
-                      إغلاق
+                      <span className="hidden sm:inline">إغلاق</span>
                     </Button>
                   </div>
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className="p-3 md:p-6 overflow-y-auto flex-1">
                   <div className="prose prose-invert max-w-none">
                     <div className="text-white text-lg leading-lax font-arabic whitespace-pre-wrap">
                       {viewingStory.content_arabic}
@@ -300,10 +306,10 @@ export default function TeacherStoriesPage() {
                   >
                     <Card className="hover:shadow-lg transition-all h-full flex flex-col">
                       {/* Story Header */}
-                      <div className={`bg-gradient-to-r ${getDifficultyColor(story.difficulty)} p-4 rounded-t-lg -m-6 mb-4`}>
-                        <h3 className="text-xl font-bold text-white mb-1 line-clamp-2">{story.title_arabic}</h3>
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className="bg-white/20 px-3 py-1 rounded-full text-white font-semibold">
+                      <div className={`bg-gradient-to-r ${getDifficultyColor(story.difficulty)} p-3 md:p-4 rounded-t-lg -m-6 mb-4`}>
+                        <h3 className="text-base md:text-xl font-bold text-white mb-1 line-clamp-2">{story.title_arabic}</h3>
+                        <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm">
+                          <span className="bg-white/20 px-2 py-1 md:px-3 md:py-1 rounded-full text-white font-semibold text-xs">
                             {getDifficultyText(story.difficulty)}
                           </span>
                           <span className="text-white font-semibold">الصف {story.grade_level}</span>
@@ -312,8 +318,8 @@ export default function TeacherStoriesPage() {
 
                       {/* Story Content Preview */}
                       <div className="flex-1 mb-4">
-                        <p className="text-gray-300 text-sm line-clamp-3">
-                          {story.content_arabic.substring(0, 150)}...
+                        <p className="text-gray-300 text-xs md:text-sm line-clamp-3">
+                          {story.content_arabic.substring(0, 100)}...
                         </p>
                       </div>
 
@@ -329,17 +335,20 @@ export default function TeacherStoriesPage() {
                           onClick={() => setViewingStory(story)}
                           variant="success"
                           size="sm"
-                          icon={<Eye className="w-4 h-4" />}
+                          icon={<Eye className="w-3 h-3 md:w-4 md:h-4" />}
                           disabled={showEditForm || isClosingEdit}
+                          className="flex-1 text-xs md:text-sm"
                         >
-                          عرض
+                          <span className="hidden sm:inline">عرض</span>
+                          <span className="sm:hidden">👁️</span>
                         </Button>
                         <Button
                           onClick={() => handleEdit(story)}
                           variant="primary"
                           size="sm"
-                          icon={<Edit className="w-4 h-4" />}
+                          icon={<Edit className="w-3 h-3 md:w-4 md:h-4" />}
                           disabled={isClosingEdit}
+                          className="flex-1 text-xs md:text-sm"
                         >
                           {editingStory?.id === story.id && showEditForm ? 'إغلاق' : 'تعديل'}
                         </Button>
@@ -347,10 +356,12 @@ export default function TeacherStoriesPage() {
                           onClick={() => handleDelete(story.id, story.title_arabic)}
                           variant="ghost"
                           size="sm"
-                          icon={<Trash2 className="w-4 h-4" />}
+                          icon={<Trash2 className="w-3 h-3 md:w-4 md:h-4" />}
                           disabled={showEditForm && editingStory?.id !== story.id}
+                          className="text-xs md:text-sm"
                         >
-                          حذف
+                          <span className="hidden sm:inline">حذف</span>
+                          <span className="sm:hidden">🗑️</span>
                         </Button>
                       </div>
                     </Card>

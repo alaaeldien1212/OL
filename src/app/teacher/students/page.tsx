@@ -114,21 +114,28 @@ export default function StudentManagement() {
     toast.success('تم نسخ رمز الوصول!')
   }
 
-  const deleteStudent = async (studentId: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الطالب؟')) return
+  const deleteStudent = async (studentId: string, studentName: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الطالب "${studentName}"؟`)) return
 
     try {
-      const { error } = await supabase
-        .from('students')
-        .delete()
-        .eq('id', studentId)
+      const teacherData = user as any
+      
+      const { data, error } = await supabase.rpc('teacher_delete_student', {
+        teacher_access_code: teacherData.access_code,
+        student_id: studentId
+      })
 
-      if (error) throw error
-      toast.success('تم حذف الطالب')
+      if (error) {
+        console.error('Error deleting student:', error)
+        toast.error(`فشل حذف الطالب: ${error.message}`)
+        return
+      }
+
+      toast.success('تم حذف الطالب بنجاح')
       loadStudents()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting student:', error)
-      toast.error('فشل حذف الطالب')
+      toast.error(`فشل حذف الطالب: ${error.message}`)
     }
   }
 
@@ -142,25 +149,28 @@ export default function StudentManagement() {
           className="max-w-7xl mx-auto"
         >
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">
                 إدارة الطلاب 👥
               </h1>
-              <p className="text-gray-400 text-lg">إنشاء وإدارة حسابات الطلاب</p>
+              <p className="text-gray-400 text-sm md:text-lg">إنشاء وإدارة حسابات الطلاب</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <Button
                 onClick={() => setShowCreateModal(true)}
                 variant="primary"
-                size="lg"
+                size="sm"
+                className="flex-1 md:flex-none"
               >
-                ➕ إضافة طالب
+                <span className="hidden md:inline">➕ إضافة طالب</span>
+                <span className="md:hidden">➕ إضافة</span>
               </Button>
               <Button
                 onClick={() => router.back()}
                 variant="ghost"
-                size="lg"
+                size="sm"
+                className="flex-1 md:flex-none"
               >
                 العودة
               </Button>
@@ -216,27 +226,27 @@ export default function StudentManagement() {
                 >
                   <Card>
                     <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-1">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base md:text-xl font-bold text-white mb-1 truncate">
                           {student.name}
                         </h3>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-xs md:text-sm text-gray-400">
                           انضم: {new Date(student.created_at).toLocaleDateString('ar-SA')}
                         </p>
                       </div>
-                      <div className="text-3xl">👦</div>
+                      <div className="text-2xl md:text-3xl flex-shrink-0">👦</div>
                     </div>
 
                     {/* Access Code */}
-                    <div className="bg-slate-900 p-3 rounded-lg mb-3 border border-slate-700">
+                    <div className="bg-slate-900 p-2 md:p-3 rounded-lg mb-3 border border-slate-700">
                       <p className="text-xs text-gray-400 mb-1">رمز الوصول</p>
                       <div className="flex items-center justify-between">
-                        <code className="text-lg font-mono text-primary">
+                        <code className="text-sm md:text-lg font-mono text-primary truncate flex-1">
                           {student.access_code}
                         </code>
                         <button
                           onClick={() => copyAccessCode(student.access_code)}
-                          className="text-gray-400 hover:text-white transition-colors"
+                          className="text-gray-400 hover:text-white transition-colors flex-shrink-0 ml-2"
                         >
                           📋
                         </button>
@@ -244,15 +254,15 @@ export default function StudentManagement() {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-2 gap-2 md:gap-3 mb-3">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-primary">
+                        <p className="text-xl md:text-2xl font-bold text-primary">
                           {student.stories_read}
                         </p>
                         <p className="text-xs text-gray-400">قصة</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-accent-green">
+                        <p className="text-xl md:text-2xl font-bold text-accent-green">
                           {student.forms_submitted}
                         </p>
                         <p className="text-xs text-gray-400">نموذج</p>
@@ -265,14 +275,15 @@ export default function StudentManagement() {
                         onClick={() => router.push(`/teacher/students/${student.id}`)}
                         size="sm"
                         variant="primary"
-                        className="flex-1"
+                        className="flex-1 text-xs md:text-sm"
                       >
                         عرض
                       </Button>
                       <Button
-                        onClick={() => deleteStudent(student.id)}
+                        onClick={() => deleteStudent(student.id, student.name)}
                         size="sm"
                         variant="danger"
+                        className="text-xs md:text-sm"
                       >
                         🗑️
                       </Button>

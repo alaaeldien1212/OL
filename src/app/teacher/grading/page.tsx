@@ -180,21 +180,22 @@ export default function GradingPage() {
           className="max-w-7xl mx-auto"
         >
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <Star className="w-10 h-10 text-yellow-400" />
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                <Star className="w-6 h-6 md:w-10 md:h-10 text-yellow-400" />
                 تقييم الإجابات
               </h1>
-              <p className="text-gray-300 text-lg font-semibold">
+              <p className="text-gray-300 text-sm md:text-lg font-semibold">
                 تقييم وتصحيح إجابات الطلاب
               </p>
             </div>
             <Button
               onClick={() => router.back()}
               variant="ghost"
-              size="md"
-              icon={<ArrowLeft className="w-5 h-5" />}
+              size="sm"
+              icon={<ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />}
+              className="w-full md:w-auto"
             >
               العودة
             </Button>
@@ -204,9 +205,9 @@ export default function GradingPage() {
             {/* Submissions List */}
             <div className="lg:col-span-2">
               <Card>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-white">قائمة الإجابات</h2>
-                  <div className="flex gap-2">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4 mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold text-white">قائمة الإجابات</h2>
+                  <div className="flex gap-2 w-full md:w-auto">
                     {[
                       { value: 'all', label: 'الكل' },
                       { value: 'ungraded', label: 'غير مقيمة' },
@@ -217,6 +218,7 @@ export default function GradingPage() {
                         onClick={() => setFilter(value as any)}
                         variant={filter === value ? 'primary' : 'ghost'}
                         size="sm"
+                        className="flex-1 md:flex-none"
                       >
                         {label}
                       </Button>
@@ -255,17 +257,17 @@ export default function GradingPage() {
                         }}
                       >
                         <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-white mb-1">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base md:text-lg font-bold text-white mb-1 truncate">
                               {submission.student_name}
                             </h3>
-                            <p className="text-gray-300 mb-2">
-                              <BookOpen className="w-4 h-4 inline-block ml-1" />
-                              {submission.story_title}
+                            <p className="text-gray-300 mb-2 text-sm md:text-base">
+                              <BookOpen className="w-3 h-3 md:w-4 md:h-4 inline-block ml-1" />
+                              <span className="truncate block">{submission.story_title}</span>
                             </p>
-                            <p className="text-gray-400 text-sm">
-                              <FileText className="w-4 h-4 inline-block ml-1" />
-                              {submission.form_title}
+                            <p className="text-gray-400 text-xs md:text-sm">
+                              <FileText className="w-3 h-3 md:w-4 md:h-4 inline-block ml-1" />
+                              <span className="truncate block">{submission.form_title}</span>
                             </p>
                             {/* Voice Status */}
                             {submission.audio_url && (
@@ -316,7 +318,7 @@ export default function GradingPage() {
             <div>
               {selectedSubmission ? (
                 <Card>
-                  <h3 className="text-xl font-bold text-white mb-4">تقييم الإجابة</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-4">تقييم الإجابة</h3>
                   
                   <div className="space-y-4">
                     <div>
@@ -344,27 +346,27 @@ export default function GradingPage() {
                     {(selectedSubmission.grade !== null || selectedSubmission.voice_grade !== null) && (
                       <div className="grid grid-cols-2 gap-4">
                         {selectedSubmission.grade !== null && (
-                          <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-lg p-3 border border-blue-500/30">
+                          <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-lg p-2 md:p-3 border border-blue-500/30">
                             <label className="block text-blue-300 font-semibold mb-1 text-xs">
                               تقييم النموذج
                             </label>
-                            <p className="text-white font-bold text-lg">{selectedSubmission.grade}/100</p>
+                            <p className="text-white font-bold text-base md:text-lg">{selectedSubmission.grade}/100</p>
                           </div>
                         )}
                         {selectedSubmission.voice_grade !== null && (
-                          <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-lg p-3 border border-purple-500/30">
+                          <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-lg p-2 md:p-3 border border-purple-500/30">
                             <label className="block text-purple-300 font-semibold mb-1 text-xs">
                               تقييم القراءة الصوتية
                             </label>
-                            <p className="text-white font-bold text-lg">{selectedSubmission.voice_grade}/100</p>
+                            <p className="text-white font-bold text-base md:text-lg">{selectedSubmission.voice_grade}/100</p>
                           </div>
                         )}
                         {selectedSubmission.grade !== null && selectedSubmission.voice_grade !== null && (
-                          <div className="col-span-2 bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-lg p-3 border border-green-500/30 text-center">
+                          <div className="col-span-2 bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-lg p-2 md:p-3 border border-green-500/30 text-center">
                             <label className="block text-green-300 font-semibold mb-1 text-xs">
                               المعدل النهائي
                             </label>
-                            <p className="text-white font-bold text-xl">
+                            <p className="text-white font-bold text-lg md:text-xl">
                               {Math.round((selectedSubmission.grade + selectedSubmission.voice_grade) / 2)}/100
                             </p>
                           </div>
@@ -454,7 +456,7 @@ export default function GradingPage() {
                             onChange={(e) => setVoiceGrade(e.target.value)}
                             min="0"
                             max="100"
-                            className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
+                            className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold text-sm md:text-base"
                             disabled={isGrading}
                             placeholder="الدرجة (0-100)"
                           />
@@ -473,14 +475,14 @@ export default function GradingPage() {
                         onChange={(e) => setGrade(e.target.value)}
                         min="0"
                         max="100"
-                        className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold"
+                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold text-sm md:text-base"
                         disabled={isGrading}
                       />
                     </div>
 
                     {/* Feedback */}
                     <div>
-                      <label className="block text-gray-300 font-semibold mb-2">
+                      <label className="block text-gray-300 font-semibold mb-2 text-sm md:text-base">
                         التعليق (اختياري)
                       </label>
                       <textarea
@@ -488,18 +490,18 @@ export default function GradingPage() {
                         onChange={(e) => setFeedback(e.target.value)}
                         rows={3}
                         placeholder="اكتب تعليقك هنا..."
-                        className="w-full px-4 py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold resize-none"
+                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold resize-none text-sm md:text-base"
                         disabled={isGrading}
                       />
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3">
                       <Button
                         onClick={handleGradeSubmission}
                         variant="primary"
-                        size="md"
-                        className="flex-1"
+                        size="sm"
+                        className="flex-1 text-sm md:text-base"
                         isLoading={isGrading}
                         disabled={isGrading}
                         icon={<Save className="w-4 h-4" />}
@@ -514,7 +516,8 @@ export default function GradingPage() {
                           setVoiceGrade('')
                         }}
                         variant="ghost"
-                        size="md"
+                        size="sm"
+                        className="text-sm md:text-base"
                         disabled={isGrading}
                       >
                         إلغاء

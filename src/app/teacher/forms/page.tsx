@@ -151,26 +151,31 @@ export default function TeacherFormsPage() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex justify-between items-center mb-8"
+            className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8"
           >
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <FileText className="w-10 h-10 text-primary" />
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                <FileText className="w-6 h-6 md:w-10 md:h-10 text-primary" />
                 نماذجي
               </h1>
-              <p className="text-gray-200">إدارة النماذج التي قمت بإنشائها</p>
+              <p className="text-gray-200 text-sm md:text-base">إدارة النماذج التي قمت بإنشائها</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <Button
                 onClick={() => router.push('/teacher/forms/create')}
                 variant="primary"
                 icon={<Plus className="w-4 h-4" />}
+                size="sm"
+                className="flex-1 md:flex-none"
               >
-                نموذج جديد
+                <span className="hidden md:inline">نموذج جديد</span>
+                <span className="md:hidden">جديد</span>
               </Button>
               <Button
                 onClick={() => router.push('/teacher')}
                 variant="ghost"
+                size="sm"
+                className="flex-1 md:flex-none"
               >
                 العودة
               </Button>
@@ -185,8 +190,8 @@ export default function TeacherFormsPage() {
               className="mb-8"
             >
               <Card>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-white">تعديل النموذج</h3>
+                <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold text-white">تعديل النموذج</h3>
                   <Button
                     onClick={() => {
                       setShowEditForm(false)
@@ -196,7 +201,7 @@ export default function TeacherFormsPage() {
                     size="sm"
                     icon={<X className="w-4 h-4" />}
                   >
-                    إلغاء
+                    <span className="hidden sm:inline">إلغاء</span>
                   </Button>
                 </div>
 
@@ -325,20 +330,20 @@ export default function TeacherFormsPage() {
                   >
                     <Card className="hover:shadow-lg transition-all h-full flex flex-col">
                       {/* Form Header */}
-                      <div className="bg-gradient-to-r from-primary/20 to-blue-600/20 p-4 rounded-t-lg -m-6 mb-4">
-                        <BookOpen className="w-8 h-8 text-primary mb-2" />
-                        <h3 className="text-xl font-bold text-white mb-1 line-clamp-2">{form.title_arabic}</h3>
-                        <p className="text-sm text-gray-300">{form.story_title}</p>
+                      <div className="bg-gradient-to-r from-primary/20 to-blue-600/20 p-3 md:p-4 rounded-t-lg -m-6 mb-4">
+                        <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-primary mb-2" />
+                        <h3 className="text-base md:text-xl font-bold text-white mb-1 line-clamp-2">{form.title_arabic}</h3>
+                        <p className="text-xs md:text-sm text-gray-300 truncate">{form.story_title}</p>
                       </div>
 
                       {/* Form Info */}
                       <div className="flex-1 mb-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-gray-300 text-sm">عدد الأسئلة</span>
-                          <span className="text-primary font-bold text-lg">{form.questions?.length || 0}</span>
+                          <span className="text-gray-300 text-xs md:text-sm">عدد الأسئلة</span>
+                          <span className="text-primary font-bold text-base md:text-lg">{form.questions?.length || 0}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <Calendar className="w-4 h-4" />
+                        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-400">
+                          <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                           <span>{new Date(form.created_at).toLocaleDateString('ar-SA')}</span>
                         </div>
                       </div>
@@ -349,15 +354,18 @@ export default function TeacherFormsPage() {
                           onClick={() => setViewingForm(form)}
                           variant="success"
                           size="sm"
-                          icon={<Eye className="w-4 h-4" />}
+                          icon={<Eye className="w-3 h-3 md:w-4 md:h-4" />}
+                          className="flex-1 text-xs md:text-sm"
                         >
-                          عرض
+                          <span className="hidden sm:inline">عرض</span>
+                          <span className="sm:hidden">👁️</span>
                         </Button>
                         <Button
                           onClick={() => handleEdit(form)}
                           variant="primary"
                           size="sm"
-                          icon={<Edit className="w-4 h-4" />}
+                          icon={<Edit className="w-3 h-3 md:w-4 md:h-4" />}
+                          className="flex-1 text-xs md:text-sm"
                         >
                           {editingForm?.id === form.id && showEditForm ? 'إغلاق' : 'تعديل'}
                         </Button>
@@ -365,9 +373,11 @@ export default function TeacherFormsPage() {
                           onClick={() => handleDelete(form.id, form.title_arabic)}
                           variant="ghost"
                           size="sm"
-                          icon={<Trash2 className="w-4 h-4" />}
+                          icon={<Trash2 className="w-3 h-3 md:w-4 md:h-4" />}
+                          className="text-xs md:text-sm"
                         >
-                          حذف
+                          <span className="hidden sm:inline">حذف</span>
+                          <span className="sm:hidden">🗑️</span>
                         </Button>
                       </div>
                     </Card>
