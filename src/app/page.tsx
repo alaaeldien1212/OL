@@ -353,7 +353,7 @@ export default function HomePage() {
             <Card className="p-4 md:p-6 text-center hover:scale-105 transition-transform duration-200">
               <BookOpen className="w-12 h-12 md:w-16 md:h-16 text-accent-green mx-auto mb-3" />
               <h3 className="text-lg md:text-xl font-bold text-white mb-2">تسجيل الدخول</h3>
-              <p className="text-gray-300 mb-4 text-sm md:text-base">قراءة القصص وحل النماذج</p>
+              <p className="text-gray-300 mb-4 text-sm md:text-base">تسجيل الدخول للطالب والمعلم</p>
               <Button
                 onClick={() => setShowLoginForm(true)}
                 variant="success"
