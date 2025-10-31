@@ -189,19 +189,19 @@ export default function HomePage() {
               ) : (
                 <>
                   {/* Top 3 - Podium View */}
-                  <div className="flex justify-center items-end gap-1 sm:gap-2 md:gap-3 py-2 mb-3 overflow-x-auto px-1 -mx-1">
+                  <div className="grid grid-cols-3 gap-2 md:flex md:justify-center md:items-end md:gap-3 py-2 mb-3">
                     {/* 2nd Place */}
                     {leaderboard[1] && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="flex flex-col items-center flex-shrink-0"
+                        className="flex flex-col items-center"
                       >
                         <div className="bg-gradient-to-b from-gray-300 to-gray-400 text-slate-900 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
                           <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
-                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[70px] sm:w-[80px] md:min-w-[120px] max-w-[120px]">
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[120px] md:max-w-[120px]">
                           <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[1].name}</h3>
                           <p className="text-[10px] sm:text-xs md:text-sm text-gray-300">المركز الثاني</p>
                           {leaderboard[1].current_title && (
@@ -230,7 +230,7 @@ export default function HomePage() {
                         <div className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white w-14 h-14 sm:w-16 sm:h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-2 md:mb-3 shadow-lg">
                           <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10" />
                         </div>
-                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[80px] sm:w-[90px] md:min-w-[140px] max-w-[140px] border-2 border-yellow-500/30">
+                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[140px] md:max-w-[140px] border-2 border-yellow-500/30">
                           <h3 className="text-sm sm:text-base md:text-xl font-bold text-white truncate">{leaderboard[0].name}</h3>
                           <p className="text-[10px] sm:text-xs md:text-sm text-yellow-300">المركز الأول</p>
                           {leaderboard[0].current_title && (
@@ -259,7 +259,7 @@ export default function HomePage() {
                         <div className="bg-gradient-to-b from-amber-600 to-amber-700 text-white w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
                           <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
-                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[70px] sm:w-[80px] md:min-w-[120px] max-w-[120px]">
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[120px] md:max-w-[120px]">
                           <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[2].name}</h3>
                           <p className="text-xs md:text-sm text-gray-300">المركز الثالث</p>
                           {leaderboard[2].current_title && (
