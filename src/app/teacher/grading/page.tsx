@@ -361,17 +361,23 @@ export default function GradingPage() {
                             <p className="text-white font-bold text-base md:text-lg">{selectedSubmission.voice_grade}/100</p>
                           </div>
                         )}
-                        {selectedSubmission.grade !== null && selectedSubmission.grade !== undefined && 
-                         selectedSubmission.voice_grade !== null && selectedSubmission.voice_grade !== undefined && (
-                          <div className="col-span-2 bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-lg p-2 md:p-3 border border-green-500/30 text-center">
-                            <label className="block text-green-300 font-semibold mb-1 text-xs">
-                              المعدل النهائي
-                            </label>
-                            <p className="text-white font-bold text-lg md:text-xl">
-                              {Math.round(((selectedSubmission.grade ?? 0) + (selectedSubmission.voice_grade ?? 0)) / 2)}/100
-                            </p>
-                          </div>
-                        )}
+                        {(() => {
+                          const grade = selectedSubmission.grade
+                          const voiceGrade = selectedSubmission.voice_grade
+                          if (grade !== null && grade !== undefined && voiceGrade !== null && voiceGrade !== undefined) {
+                            return (
+                              <div className="col-span-2 bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-lg p-2 md:p-3 border border-green-500/30 text-center">
+                                <label className="block text-green-300 font-semibold mb-1 text-xs">
+                                  المعدل النهائي
+                                </label>
+                                <p className="text-white font-bold text-lg md:text-xl">
+                                  {Math.round((grade + voiceGrade) / 2)}/100
+                                </p>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     )}
 
