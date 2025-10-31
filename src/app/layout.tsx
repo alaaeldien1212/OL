@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   title: 'البيان',
   description: 'مكتبة قصص حديثة وتفاعلية للأطفال مع واجهة سهلة وجميلة',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.jpg',
+    apple: '/favicon.jpg',
   },
   openGraph: {
     title: 'البيان',
@@ -41,7 +42,8 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="description" content="مكتبة قصص حديثة وتفاعلية للأطفال" />
         <meta name="theme-color" content="#3B82F6" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/favicon.jpg" />
       </head>
       <body className="font-arabic antialiased bg-cloud text-white">
         <AuthProvider>

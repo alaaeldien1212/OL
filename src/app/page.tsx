@@ -125,7 +125,7 @@ export default function HomePage() {
 
   return (
     <AnimatedBackground>
-      <div className="w-full min-h-screen flex items-center justify-center px-2 md:px-4 py-4" dir="rtl">
+      <div className="w-full min-h-screen flex items-center justify-center px-2 sm:px-3 md:px-4 py-4 overflow-x-hidden" dir="rtl">
         <div className="max-w-7xl w-full">
           {/* Header */}
           <motion.div 
@@ -169,7 +169,7 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-4 md:mb-6"
           >
-            <Card className="p-2 md:p-3">
+            <Card className="p-2 sm:p-2.5 md:p-3 overflow-hidden">
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
                 <Trophy className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
                 <h2 className="text-lg md:text-xl font-bold text-white">جدول الترتيب</h2>
@@ -189,21 +189,21 @@ export default function HomePage() {
               ) : (
                 <>
                   {/* Top 3 - Podium View */}
-                  <div className="flex justify-center items-end gap-2 md:gap-3 py-2 mb-3">
+                  <div className="flex justify-center items-end gap-1 sm:gap-2 md:gap-3 py-2 mb-3 overflow-x-auto px-1 -mx-1">
                     {/* 2nd Place */}
                     {leaderboard[1] && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="flex flex-col items-center"
+                        className="flex flex-col items-center flex-shrink-0"
                       >
-                        <div className="bg-gradient-to-b from-gray-300 to-gray-400 text-slate-900 w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
-                          <Medal className="w-6 h-6 md:w-8 md:h-8" />
+                        <div className="bg-gradient-to-b from-gray-300 to-gray-400 text-slate-900 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                          <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
-                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[80px] md:min-w-[120px]">
-                          <h3 className="text-sm md:text-lg font-bold text-white truncate">{leaderboard[1].name}</h3>
-                          <p className="text-xs md:text-sm text-gray-300">المركز الثاني</p>
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[70px] sm:w-[80px] md:min-w-[120px] max-w-[120px]">
+                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[1].name}</h3>
+                          <p className="text-[10px] sm:text-xs md:text-sm text-gray-300">المركز الثاني</p>
                           {leaderboard[1].current_title && (
                             <div className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full mt-1 truncate">
                               🏅 {leaderboard[1].current_title}
@@ -227,12 +227,12 @@ export default function HomePage() {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         className="flex flex-col items-center"
                       >
-                        <div className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-2 md:mb-3 shadow-lg">
-                          <Crown className="w-7 h-7 md:w-10 md:h-10" />
+                        <div className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white w-14 h-14 sm:w-16 sm:h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-2 md:mb-3 shadow-lg">
+                          <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10" />
                         </div>
-                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[90px] md:min-w-[140px] border-2 border-yellow-500/30">
-                          <h3 className="text-base md:text-xl font-bold text-white truncate">{leaderboard[0].name}</h3>
-                          <p className="text-xs md:text-sm text-yellow-300">المركز الأول</p>
+                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[80px] sm:w-[90px] md:min-w-[140px] max-w-[140px] border-2 border-yellow-500/30">
+                          <h3 className="text-sm sm:text-base md:text-xl font-bold text-white truncate">{leaderboard[0].name}</h3>
+                          <p className="text-[10px] sm:text-xs md:text-sm text-yellow-300">المركز الأول</p>
                           {leaderboard[0].current_title && (
                             <div className="text-xs bg-yellow-500/20 text-yellow-200 px-2 py-1 rounded-full mt-1 truncate">
                               🏅 {leaderboard[0].current_title}
@@ -256,11 +256,11 @@ export default function HomePage() {
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="flex flex-col items-center"
                       >
-                        <div className="bg-gradient-to-b from-amber-600 to-amber-700 text-white w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
-                          <Medal className="w-6 h-6 md:w-8 md:h-8" />
+                        <div className="bg-gradient-to-b from-amber-600 to-amber-700 text-white w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-2 md:mb-3">
+                          <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
-                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center min-w-[80px] md:min-w-[120px]">
-                          <h3 className="text-sm md:text-lg font-bold text-white truncate">{leaderboard[2].name}</h3>
+                        <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-[70px] sm:w-[80px] md:min-w-[120px] max-w-[120px]">
+                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[2].name}</h3>
                           <p className="text-xs md:text-sm text-gray-300">المركز الثالث</p>
                           {leaderboard[2].current_title && (
                             <div className="text-xs bg-amber-600/50 text-amber-300 px-2 py-1 rounded-full mt-1 truncate">
@@ -352,7 +352,7 @@ export default function HomePage() {
           >
             <Card className="p-4 md:p-6 text-center hover:scale-105 transition-transform duration-200">
               <BookOpen className="w-12 h-12 md:w-16 md:h-16 text-accent-green mx-auto mb-3" />
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2">دخول الطالب</h3>
+              <h3 className="text-lg md:text-xl font-bold text-white mb-2">تسجيل الدخول</h3>
               <p className="text-gray-300 mb-4 text-sm md:text-base">قراءة القصص وحل النماذج</p>
               <Button
                 onClick={() => setShowLoginForm(true)}
@@ -361,7 +361,7 @@ export default function HomePage() {
                 className="w-full"
                 icon={<BookOpen className="w-5 h-5" />}
               >
-                دخول الطالب
+                تسجيل الدخول
               </Button>
             </Card>
           </motion.div>
@@ -385,7 +385,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                   <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-accent-green flex-shrink-0" />
                   <h3 className="text-lg md:text-xl font-bold text-white">
-                    دخول الطالب
+                    تسجيل الدخول
                   </h3>
                 </div>
 

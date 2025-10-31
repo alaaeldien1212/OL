@@ -100,7 +100,7 @@ export default function LeaderboardPage() {
   return (
     <AnimatedBackground>
       <Toaster position="top-center" />
-      <div className="w-full min-h-screen p-4 md:p-6" dir="rtl">
+      <div className="w-full min-h-screen p-4 md:p-6 overflow-x-hidden" dir="rtl">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -131,9 +131,9 @@ export default function LeaderboardPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="mb-12"
+              className="mb-8 md:mb-12 overflow-x-auto -mx-2 sm:-mx-0 px-2 sm:px-0"
             >
-              <div className="grid grid-cols-3 gap-4 items-end">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 items-end min-w-[280px] sm:min-w-0">
                 {/* 2nd Place */}
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
@@ -141,38 +141,38 @@ export default function LeaderboardPage() {
                   transition={{ delay: 0.3 }}
                   className="text-center"
                 >
-                  <Card className="bg-gradient-to-b from-gray-700 to-gray-800 p-6">
-                    <div className="flex justify-center mb-3">
-                      <Medal className="w-16 h-16 text-gray-300" />
+                  <Card className="bg-gradient-to-b from-gray-700 to-gray-800 p-3 sm:p-4 md:p-6">
+                    <div className="flex justify-center mb-2 sm:mb-3">
+                      <Medal className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-gray-300" />
                     </div>
-                    <div className="text-4xl font-bold text-gray-300 mb-2">2</div>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-300 mb-1 sm:mb-2">2</div>
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-2 truncate">
                       {leaderboard[1]?.name}
                     </h3>
-                    <div className="flex justify-center gap-4 text-sm">
+                    <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm">
                       <div className="text-center">
-                        <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
-                        <p className="text-gray-400">قصة</p>
-                        <p className="text-lg font-bold text-primary">
+                        <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary mx-auto mb-1" />
+                        <p className="text-gray-400 text-[10px] sm:text-xs">قصة</p>
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-primary">
                           {leaderboard[1]?.stories_read}
                         </p>
                       </div>
                       <div className="text-center">
-                        <FileText className="w-5 h-5 text-accent-green mx-auto mb-1" />
-                        <p className="text-gray-400">نموذج</p>
-                        <p className="text-lg font-bold text-accent-green">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-accent-green mx-auto mb-1" />
+                        <p className="text-gray-400 text-[10px] sm:text-xs">نموذج</p>
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-accent-green">
                           {leaderboard[1]?.forms_submitted}
                         </p>
                       </div>
                     </div>
                     {leaderboard[1]?.current_title && (
-                      <div className="mt-2 text-center">
-                        <span className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full">
+                      <div className="mt-1 sm:mt-2 text-center">
+                        <span className="text-[10px] sm:text-xs bg-gray-600/50 text-gray-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full truncate inline-block max-w-full">
                           🏅 {leaderboard[1].current_title}
                         </span>
                       </div>
                     )}
-                    <div className="mt-3 text-2xl font-bold text-secondary">
+                    <div className="mt-2 sm:mt-3 text-lg sm:text-xl md:text-2xl font-bold text-secondary">
                       {leaderboard[1]?.combined_score} نقطة
                     </div>
                   </Card>
@@ -183,31 +183,31 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-center"
+                  className="text-center relative z-10"
                 >
-                  <Card className="bg-gradient-to-b from-yellow-600 to-yellow-700 p-8 scale-110 relative">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                      <Crown className="w-12 h-12 text-yellow-300 animate-bounce-gentle" />
+                  <Card className="bg-gradient-to-b from-yellow-600 to-yellow-700 p-4 sm:p-6 md:p-8 sm:scale-105 md:scale-110 relative overflow-visible">
+                    <div className="absolute -top-4 sm:-top-6 left-1/2 transform -translate-x-1/2">
+                      <Crown className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-yellow-300 animate-bounce-gentle" />
                     </div>
-                    <div className="flex justify-center mb-3 mt-4">
-                      <Trophy className="w-20 h-20 text-yellow-200" />
+                    <div className="flex justify-center mb-2 sm:mb-3 mt-2 sm:mt-4">
+                      <Trophy className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-yellow-200" />
                     </div>
-                    <div className="text-5xl font-bold text-white mb-2">1</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2">1</div>
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2 truncate">
                       {leaderboard[0]?.name}
                     </h3>
-                    <div className="flex justify-center gap-6 text-sm">
+                    <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm">
                       <div className="text-center">
-                        <BookOpen className="w-6 h-6 text-yellow-200 mx-auto mb-1" />
-                        <p className="text-yellow-200">قصة</p>
-                        <p className="text-xl font-bold text-white">
+                        <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-200 mx-auto mb-1" />
+                        <p className="text-yellow-200 text-[10px] sm:text-xs">قصة</p>
+                        <p className="text-base sm:text-lg md:text-xl font-bold text-white">
                           {leaderboard[0]?.stories_read}
                         </p>
                       </div>
                       <div className="text-center">
-                        <FileText className="w-6 h-6 text-yellow-200 mx-auto mb-1" />
-                        <p className="text-yellow-200">نموذج</p>
-                        <p className="text-xl font-bold text-white">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-200 mx-auto mb-1" />
+                        <p className="text-yellow-200 text-[10px] sm:text-xs">نموذج</p>
+                        <p className="text-base sm:text-lg md:text-xl font-bold text-white">
                           {leaderboard[0]?.forms_submitted}
                         </p>
                       </div>
@@ -219,7 +219,7 @@ export default function LeaderboardPage() {
                         </span>
                       </div>
                     )}
-                    <div className="mt-4 text-3xl font-bold text-white">
+                    <div className="mt-2 sm:mt-4 text-lg sm:text-2xl md:text-3xl font-bold text-white">
                       {leaderboard[0]?.combined_score} نقطة
                     </div>
                   </Card>
@@ -232,38 +232,38 @@ export default function LeaderboardPage() {
                   transition={{ delay: 0.4 }}
                   className="text-center"
                 >
-                  <Card className="bg-gradient-to-b from-amber-700 to-amber-800 p-6">
-                    <div className="flex justify-center mb-3">
-                      <Medal className="w-16 h-16 text-amber-500" />
+                  <Card className="bg-gradient-to-b from-amber-700 to-amber-800 p-3 sm:p-4 md:p-6">
+                    <div className="flex justify-center mb-2 sm:mb-3">
+                      <Medal className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-amber-500" />
                     </div>
-                    <div className="text-4xl font-bold text-amber-400 mb-2">3</div>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-400 mb-1 sm:mb-2">3</div>
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-2 truncate">
                       {leaderboard[2]?.name}
                     </h3>
-                    <div className="flex justify-center gap-4 text-sm">
+                    <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm">
                       <div className="text-center">
-                        <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
-                        <p className="text-gray-400">قصة</p>
-                        <p className="text-lg font-bold text-primary">
+                        <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary mx-auto mb-1" />
+                        <p className="text-gray-400 text-[10px] sm:text-xs">قصة</p>
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-primary">
                           {leaderboard[2]?.stories_read}
                         </p>
                       </div>
                       <div className="text-center">
-                        <FileText className="w-5 h-5 text-accent-green mx-auto mb-1" />
-                        <p className="text-gray-400">نموذج</p>
-                        <p className="text-lg font-bold text-accent-green">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-accent-green mx-auto mb-1" />
+                        <p className="text-gray-400 text-[10px] sm:text-xs">نموذج</p>
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-accent-green">
                           {leaderboard[2]?.forms_submitted}
                         </p>
                       </div>
                     </div>
                     {leaderboard[2]?.current_title && (
-                      <div className="mt-2 text-center">
-                        <span className="text-xs bg-amber-600/50 text-amber-300 px-2 py-1 rounded-full">
+                      <div className="mt-1 sm:mt-2 text-center">
+                        <span className="text-[10px] sm:text-xs bg-amber-600/50 text-amber-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full truncate inline-block max-w-full">
                           🏅 {leaderboard[2].current_title}
                         </span>
                       </div>
                     )}
-                    <div className="mt-3 text-2xl font-bold text-secondary">
+                    <div className="mt-2 sm:mt-3 text-lg sm:text-xl md:text-2xl font-bold text-secondary">
                       {leaderboard[2]?.combined_score} نقطة
                     </div>
                   </Card>
