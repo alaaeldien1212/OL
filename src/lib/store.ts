@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { User, UserRole } from '@/types'
 
 interface AppState {
@@ -11,31 +12,53 @@ interface AppState {
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   logout: () => void
+  hydrated: boolean
+  setHydrated: (hydrated: boolean) => void
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  user: null,
-  userRole: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  setUser: (user, role) =>
-    set({
-      user,
-      userRole: role,
-      isAuthenticated: !!user,
-      error: null,
-    }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
-  logout: () =>
-    set({
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
       user: null,
       userRole: null,
       isAuthenticated: false,
+      isLoading: false,
       error: null,
+      hydrated: false,
+      setUser: (user, role) => {
+        set({
+          user,
+          userRole: role,
+          isAuthenticated: !!user,
+          error: null,
+        })
+      },
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+      logout: () => {
+        set({
+          user: null,
+          userRole: null,
+          isAuthenticated: false,
+          error: null,
+        })
+      },
+      setHydrated: (hydrated) => set({ hydrated }),
     }),
-}))
+    {
+      name: 'app-storage',
+      partialize: (state) => ({
+        user: state.user,
+        userRole: state.userRole,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Called after state is rehydrated from storage
+        state?.setHydrated(true)
+      },
+    }
+  )
+)
 
 interface ThemeState {
   isDarkMode: boolean

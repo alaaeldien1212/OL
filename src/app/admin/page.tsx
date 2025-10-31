@@ -10,6 +10,7 @@ import { useAppStore } from '@/lib/store'
 import { analyticsService } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
 import { Users, Shield, BarChart3, Settings, FileText, LogOut, GraduationCap } from 'lucide-react'
+import { showPageLoader } from '@/components/PageTransitionLoader'
 
 interface AdminAnalytics {
   total_students: number
@@ -81,6 +82,7 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     const { logout } = useAppStore.getState()
     logout()
+    showPageLoader()
     router.push('/')
   }
 
@@ -189,7 +191,10 @@ export default function AdminDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center relative z-20"
-                onClick={() => router.push('/admin/teachers')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/admin/teachers')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <Users className="w-16 h-16 text-primary" />
@@ -208,7 +213,10 @@ export default function AdminDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center relative z-20"
-                onClick={() => router.push('/admin/permissions')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/admin/permissions')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <Shield className="w-16 h-16 text-secondary" />
@@ -227,7 +235,10 @@ export default function AdminDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center relative z-20"
-                onClick={() => router.push('/admin/analytics')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/admin/analytics')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <BarChart3 className="w-16 h-16 text-purple-400" />
@@ -246,7 +257,10 @@ export default function AdminDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center relative z-20"
-                onClick={() => router.push('/admin/grades')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/admin/grades')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <GraduationCap className="w-16 h-16 text-accent-green" />

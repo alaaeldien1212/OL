@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
+import StoryQuestions from '@/components/student/StoryQuestions'
 import { useAppStore } from '@/lib/store'
 import { formsService, storiesService } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
@@ -31,7 +32,7 @@ interface FormTemplate {
 export default function StoryForm() {
   const router = useRouter()
   const params = useParams()
-  const { user, isAuthenticated } = useAppStore()
+  const { user, isAuthenticated, hydrated } = useAppStore()
   const [formTemplate, setFormTemplate] = useState<FormTemplate | null>(null)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -41,13 +42,14 @@ export default function StoryForm() {
   const storyId = params.id as string
 
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated || !user) {
       router.push('/')
       return
     }
 
     loadFormTemplate()
-  }, [isAuthenticated, user, storyId, router])
+  }, [hydrated, isAuthenticated, user, storyId, router])
 
   const loadFormTemplate = async () => {
     try {
@@ -234,135 +236,7 @@ export default function StoryForm() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center gap-2 md:gap-3">
-                <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-accent-green" />
-                <span>{formTemplate.title_arabic}</span>
-              </h1>
-              <p className="text-gray-200 text-sm md:text-lg mt-2">{formTemplate.description_arabic}</p>
-            </div>
-            <Button
-              onClick={() => router.back()}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-              className="self-end md:self-auto"
-            >
-              العودة
-            </Button>
-          </div>
-
-          {/* Form */}
-          <div className="space-y-6">
-            {formTemplate.questions.map((question, index) => (
-              <motion.div
-                key={question.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card elevation="sm" padding="md" className="p-4 md:p-6">
-                  <div className="mb-4">
-                    <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                      السؤال {index + 1}
-                      {question.required && <span className="text-accent-red mr-2">*</span>}
-                    </h3>
-                    <p className="text-base md:text-lg text-gray-200 mb-4">{question.text_arabic}</p>
-                  </div>
-
-                  {question.type === 'short_answer' && (
-                    <input
-                      type="text"
-                      value={answers[question.id] || ''}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      placeholder="اكتب إجابتك هنا..."
-                      className="w-full px-3 md:px-4 py-2 md:py-3 text-base md:text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800"
-                      disabled={isSubmitting}
-                    />
-                  )}
-
-                  {question.type === 'long_answer' && (
-                    <textarea
-                      value={answers[question.id] || ''}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      placeholder="اكتب إجابتك المفصلة هنا..."
-                      rows={4}
-                      className="w-full px-3 md:px-4 py-2 md:py-3 text-base md:text-lg border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-gray-800 resize-none"
-                      disabled={isSubmitting}
-                    />
-                  )}
-
-                  {question.type === 'multiple_choice' && question.options && (
-                    <div className="space-y-2 md:space-y-3">
-                      {question.options.map((option, optionIndex) => (
-                        <label key={optionIndex} className="flex items-center space-x-2 md:space-x-3 cursor-pointer py-2 md:py-0">
-                          <input
-                            type="radio"
-                            name={question.id}
-                            value={option}
-                            checked={answers[question.id] === option}
-                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                            className="w-6 h-6 md:w-5 md:h-5 text-primary"
-                            disabled={isSubmitting}
-                          />
-                          <span className="text-base md:text-lg text-gray-200">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Submit Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6 md:mt-8 flex justify-center"
-          >
-            <Button
-              onClick={handleSubmit}
-              variant="primary"
-              size="md"
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-              icon={<Send className="w-4 h-4 md:w-5 md:h-5" />}
-              className="w-full md:w-auto px-6 md:px-8"
-            >
-              {isSubmitting ? 'جاري الإرسال...' : 'إرسال الإجابات'}
-            </Button>
-          </motion.div>
-
-          {/* Progress Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6"
-          >
-            <Card elevation="sm" padding="md">
-              <div className="text-center">
-                <p className="text-gray-200 mb-2">تقدم الإجابة</p>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <motion.div
-                    className="bg-gradient-to-r from-primary to-secondary h-3 rounded-full"
-                    initial={{ width: '0%' }}
-                    animate={{ 
-                      width: `${(Object.values(answers).filter(answer => answer.trim() !== '').length / formTemplate.questions.length) * 100}%` 
-                    }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-                <p className="text-sm text-gray-200 mt-2">
-                  {Object.values(answers).filter(answer => answer.trim() !== '').length} من {formTemplate.questions.length} أسئلة
-                </p>
-              </div>
-            </Card>
-          </motion.div>
+          <StoryQuestions storyId={storyId} showBack onSubmitted={() => setTimeout(() => router.push('/student'), 1500)} />
         </motion.div>
       </div>
     </AnimatedBackground>

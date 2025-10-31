@@ -39,11 +39,16 @@ export default function CreateForm() {
   const router = useRouter()
   const { user, userRole } = useAppStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Get teacher's assigned grade dynamically
+  const teacherData = user as any
+  const assignedGrade = teacherData?.assigned_grade || 3
+  
   const [form, setForm] = useState({
     story_id: '',
     title_arabic: '',
     description_arabic: '',
-    grade_level: 3,
+    grade_level: assignedGrade,
   })
   const [questions, setQuestions] = useState<Question[]>([
     {

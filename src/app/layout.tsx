@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Almarai, Cairo } from 'next/font/google'
 import './globals.css'
+import AuthProvider from '@/components/AuthProvider'
+import PageTransitionLoader from '@/components/PageTransitionLoader'
 
 const almarai = Almarai({
   subsets: ['arabic'],
@@ -15,13 +17,13 @@ const cairo = Cairo({
 })
 
 export const metadata: Metadata = {
-  title: 'المكتبة الإلكترونية للقصص',
+  title: 'البيان',
   description: 'مكتبة قصص حديثة وتفاعلية للأطفال مع واجهة سهلة وجميلة',
   icons: {
     icon: '/favicon.ico',
   },
   openGraph: {
-    title: 'المكتبة الإلكترونية للقصص',
+    title: 'البيان',
     description: 'مكتبة قصص حديثة وتفاعلية للأطفال',
     type: 'website',
   },
@@ -42,7 +44,10 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-arabic antialiased bg-cloud text-white">
-        {children}
+        <AuthProvider>
+          <PageTransitionLoader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

@@ -120,10 +120,15 @@ export default function AdminPermissions() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherPermission | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoadingOverrides, setIsLoadingOverrides] = useState(false)
 
   useEffect(() => {
+    if (userRole !== 'admin') {
+      router.push('/')
+      return
+    }
     loadTeachers()
-  }, [])
+  }, [userRole, router])
 
   const loadTeachers = async () => {
     try {
@@ -151,6 +156,45 @@ export default function AdminPermissions() {
       setIsLoading(false)
     }
   }
+
+  // Load overrides when selecting a teacher
+  useEffect(() => {
+    const loadOverrides = async () => {
+      if (!selectedTeacher) return
+      try {
+        setIsLoadingOverrides(true)
+        const adminData = user as any
+        const { data, error } = await supabase.rpc('admin_get_teacher_permissions', {
+          admin_access_code: adminData.access_code,
+          target_teacher_id: selectedTeacher.teacher_id
+        })
+        if (error) throw error
+
+        // Build a quick lookup map
+        const overrides: Record<string, boolean> = {}
+        ;(data || []).forEach((row: { permission_key: string; is_enabled: boolean }) => {
+          overrides[row.permission_key] = row.is_enabled
+        })
+
+        // Merge overrides into current permission list
+        setSelectedTeacher((prev) => {
+          if (!prev) return prev
+          const merged = prev.permissions.map((perm) => ({
+            ...perm,
+            is_enabled: overrides[perm.id] !== undefined ? overrides[perm.id] : perm.is_enabled
+          }))
+          return { ...prev, permissions: merged }
+        })
+      } catch (e) {
+        console.error('Error loading overrides', e)
+        toast.error('فشل تحميل الأذونات المخصصة')
+      } finally {
+        setIsLoadingOverrides(false)
+      }
+    }
+    loadOverrides()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTeacher?.teacher_id])
 
   const getPermissionsForLevel = (level: string): Permission[] => {
     const allPermissions: Permission[] = []
@@ -190,13 +234,19 @@ export default function AdminPermissions() {
   const updatePermissionLevel = async (teacherId: string, newLevel: string) => {
     try {
       setIsSaving(true)
+      const adminData = user as any
 
-      const { error } = await supabase
-        .from('teachers')
-        .update({ permission_level: newLevel })
-        .eq('id', teacherId)
+      // Use admin RPC function to update teacher
+      const { data, error } = await supabase.rpc('admin_update_teacher', {
+        teacher_id: teacherId,
+        updates: { permission_level: newLevel },
+        admin_access_code: adminData.access_code
+      })
 
-      if (error) throw error
+      if (error) {
+        console.error('RPC error:', error)
+        throw error
+      }
 
       toast.success('تم تحديث مستوى الصلاحية بنجاح! 🎉')
       
@@ -214,22 +264,62 @@ export default function AdminPermissions() {
           permissions: getPermissionsForLevel(newLevel)
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating permission level:', error)
-      toast.error('فشل تحديث مستوى الصلاحية')
+      toast.error(`فشل تحديث مستوى الصلاحية: ${error.message || 'حدث خطأ'}`)
     } finally {
       setIsSaving(false)
     }
   }
 
   const togglePermission = async (teacherId: string, permissionId: string) => {
-    // This would require a more complex permission system
-    // For now, we'll just show a message
-    toast('تعديل الصلاحيات الفردية قريباً...')
+    try {
+      if (!selectedTeacher) return
+      setIsSaving(true)
+      const adminData = user as any
+
+      // Determine current state and next state
+      const current = selectedTeacher.permissions.find(p => p.id === permissionId)?.is_enabled || false
+      const next = !current
+
+      const { data, error } = await supabase.rpc('admin_set_teacher_permission', {
+        admin_access_code: adminData.access_code,
+        target_teacher_id: teacherId,
+        permission_key: permissionId,
+        is_enabled: next
+      })
+      if (error) throw error
+
+      // Update local state
+      setSelectedTeacher({
+        ...selectedTeacher,
+        permissions: selectedTeacher.permissions.map(p =>
+          p.id === permissionId ? { ...p, is_enabled: next } : p
+        )
+      })
+
+      // Also reflect in list panel if needed
+      setTeachers(prev => prev.map(t =>
+        t.teacher_id === teacherId
+          ? {
+              ...t,
+              permissions: t.permissions.map(p =>
+                p.id === permissionId ? { ...p, is_enabled: next } : p
+              )
+            }
+          : t
+      ))
+
+      toast.success('تم تحديث الإذن الفردي')
+    } catch (e: any) {
+      console.error('Error toggling permission:', e)
+      toast.error(`فشل تحديث الإذن: ${e.message || 'حدث خطأ'}`)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   if (userRole !== 'admin') {
-    router.push('/')
     return null
   }
 

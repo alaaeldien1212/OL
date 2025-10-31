@@ -11,10 +11,11 @@ import { useAppStore } from '@/lib/store'
 import { storiesService, supabase } from '@/lib/supabase'
 import { Story } from '@/types'
 import toast, { Toaster } from 'react-hot-toast'
+import { showPageLoader } from '@/components/PageTransitionLoader'
 
 export default function StudentDashboard() {
   const router = useRouter()
-  const { user, isAuthenticated } = useAppStore()
+  const { user, isAuthenticated, hydrated } = useAppStore()
   const [stories, setStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({ storiesRead: 0, formsSubmitted: 0, titleName: 'قارئ مبتدئ' })
@@ -62,13 +63,14 @@ export default function StudentDashboard() {
   }
 
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated || !user) {
       router.push('/')
       return
     }
 
     loadStories()
-  }, [user, isAuthenticated, router])
+  }, [hydrated, user, isAuthenticated, router])
 
   // Add focus listener to refresh stories when returning to the page
   useEffect(() => {
@@ -91,20 +93,23 @@ export default function StudentDashboard() {
       toast.error('لقد قمت بإرسال إجابات هذه القصة مسبقاً')
       return
     }
+    showPageLoader()
     router.push(`/student/read/${storyId}`)
   }
 
   const handleViewProfile = () => {
+    showPageLoader()
     router.push('/student/profile')
   }
 
   const handleLogout = () => {
     const { logout } = useAppStore.getState()
     logout()
+    showPageLoader()
     router.push('/')
   }
 
-  if (!isAuthenticated || isLoading) {
+  if (!hydrated || !isAuthenticated || isLoading) {
     return (
       <AnimatedBackground>
         <div className="w-full h-full flex items-center justify-center" dir="rtl">
@@ -138,7 +143,10 @@ export default function StudentDashboard() {
             </div>
             <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <Button
-                onClick={() => router.push('/student/submissions')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/student/submissions')
+                }}
                 variant="primary"
                 size="sm"
                 className="flex-1 md:flex-none"

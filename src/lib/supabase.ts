@@ -331,10 +331,14 @@ export const gradingService = {
   },
 
   async getCurrentTeacherAccessCode() {
-    // Get the current teacher's access code from the store
-    const { user } = useAppStore.getState()
+    // Get the current teacher or admin access code from the store
+    const { user, userRole } = useAppStore.getState()
     if (!user || !('access_code' in user)) {
-      throw new Error('Teacher access code not available')
+      throw new Error('User access code not available')
+    }
+    // Admins can also grade submissions
+    if (userRole !== 'teacher' && userRole !== 'admin') {
+      throw new Error('Only teachers and admins can grade submissions')
     }
     return (user as any).access_code as string
   },
@@ -351,6 +355,25 @@ export const studentSubmissionsService = {
       throw error
     }
 
+    return data || []
+  },
+}
+
+export const adminGradingService = {
+  async getGradeSubmissions(gradeLevel: number) {
+    console.log('Loading submissions for grade:', gradeLevel)
+    
+    // Use RPC function to bypass RLS policies
+    const { data, error } = await supabase.rpc('admin_get_grade_submissions', {
+      grade_num: gradeLevel
+    })
+
+    if (error) {
+      console.error('Error loading grade submissions:', error)
+      throw error
+    }
+
+    console.log('Loaded submissions for grade:', data?.length || 0)
     return data || []
   },
 }

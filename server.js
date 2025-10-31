@@ -6,7 +6,7 @@ const path = require('path')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
-const port = 3000
+const port = 3008
 
 // Read HTTPS certificate files
 const httpsOptions = {

@@ -70,8 +70,12 @@ export default function AdminAnalytics() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (userRole !== 'admin') {
+      router.push('/')
+      return
+    }
     loadSystemAnalytics()
-  }, [])
+  }, [userRole, router])
 
   const loadSystemAnalytics = async () => {
     try {
@@ -194,7 +198,6 @@ export default function AdminAnalytics() {
   }
 
   if (userRole !== 'admin') {
-    router.push('/')
     return null
   }
 

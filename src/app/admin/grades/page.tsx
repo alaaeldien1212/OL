@@ -108,8 +108,8 @@ export default function GradeManagement() {
       
       // Create stats from classrooms data and fetch real counts
       const statsPromises = (gradesData || []).map(async (grade) => {
-        const existingClassrooms = classroomsData?.filter(c => c.grade === grade.id) || []
-        const classroomIds = existingClassrooms.map(c => c.id)
+        const existingClassrooms = classroomsData?.filter((c: any) => c.grade === grade.id) || []
+        const classroomIds = existingClassrooms.map((c: any) => c.id)
         
         // Get student count for this grade (from classrooms in this grade)
         let studentCount = 0

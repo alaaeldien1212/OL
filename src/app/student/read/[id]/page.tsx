@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
+import StoryQuestions from '@/components/student/StoryQuestions'
 import { useAppStore } from '@/lib/store'
 import { storiesService, storageService } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
@@ -13,8 +14,8 @@ import toast, { Toaster } from 'react-hot-toast'
 export default function StoryReader() {
   const router = useRouter()
   const params = useParams()
-  const { user, isAuthenticated } = useAppStore()
-  const [isFullScreen, setIsFullScreen] = useState(true)
+  const { user, isAuthenticated, hydrated } = useAppStore()
+  const [isFullScreen, setIsFullScreen] = useState(false)
   const [readingTime, setReadingTime] = useState(0)
   const [showControls, setShowControls] = useState(true)
   const [story, setStory] = useState<any>(null)
@@ -33,6 +34,7 @@ export default function StoryReader() {
   const storyId = params.id as string
 
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated) {
       router.push('/')
       return
@@ -83,7 +85,19 @@ export default function StoryReader() {
       clearInterval(timer)
       if (audioUrl) URL.revokeObjectURL(audioUrl)
     }
-  }, [isAuthenticated, router, storyId])
+  }, [hydrated, isAuthenticated, router, storyId])
+
+  // Restore uploaded audio URL from localStorage (so replay works after refresh/navigation)
+  useEffect(() => {
+    try {
+      const storageKey = `audio_recording_${storyId}`
+      const savedUrl = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+      if (savedUrl && !audioUrl) {
+        setAudioUrl(savedUrl)
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storyId])
 
   // Cleanup recording on unmount
   useEffect(() => {
@@ -249,6 +263,21 @@ export default function StoryReader() {
     }
   }
 
+  // Reset previously saved/loaded recording and start a new one
+  const resetRecording = async () => {
+    try {
+      const storageKey = `audio_recording_${storyId}`
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(storageKey)
+      }
+    } catch {}
+    // Ensure any current playback/recording is stopped
+    if (isPlaying) stopAudio()
+    if (isRecording) stopRecording()
+    deleteRecording()
+    await startRecording()
+  }
+
   // Handle audio ended
   useEffect(() => {
     const audio = audioRef.current
@@ -306,11 +335,7 @@ export default function StoryReader() {
         return
       }
       
-      toast.success('تم إكمال قراءة القصة! 🎉')
-      
-      setTimeout(() => {
-        router.push(`/student/submit/${storyId}`)
-      }, 1500)
+      toast.success('تم حفظ التسجيل الصوتي بنجاح! 🎉')
     } catch (error) {
       console.error('Error completing story:', error)
       toast.error('حدث خطأ في إكمال القصة')
@@ -518,16 +543,16 @@ export default function StoryReader() {
           </motion.div>
         </motion.div>
       ) : (
-        // Normal Reading Mode
+        // Normal Reading Mode with side-by-side questions
         <AnimatedBackground>
-          <div className="w-full min-h-screen p-4 md:p-6" dir="rtl">
+          <div className="w-full min-h-screen p-4 md:p-6 pb-28 md:pb-32" dir="rtl">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-4xl mx-auto"
+              className="max-w-6xl mx-auto"
             >
               {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <h1 className="text-xl md:text-4xl font-bold text-white">
                   {story.title_arabic} 📖
                 </h1>
@@ -541,155 +566,138 @@ export default function StoryReader() {
                 </Button>
               </div>
 
-              {/* Info */}
-              <Card className="mb-6" elevation="sm">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <p className="text-gray-200 text-sm">وقت القراءة</p>
-                    <p className="text-xl md:text-2xl font-bold text-primary">{formatTime(readingTime)}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className={`inline-block px-3 py-1 md:px-4 md:py-2 text-white text-sm rounded-full font-bold ${
-                      story.difficulty === 'easy' ? 'bg-accent-green' :
-                      story.difficulty === 'medium' ? 'bg-secondary' : 'bg-accent-red'
-                    }`}>
-                      {story.difficulty === 'easy' ? 'سهل' : 
-                       story.difficulty === 'medium' ? 'متوسط' : 'صعب'}
-                    </span>
-                    <span className="inline-block px-3 py-1 md:px-4 md:py-2 bg-primary text-white text-sm rounded-full font-bold">
-                      الصف {story.grade_level}
-                    </span>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Story */}
-              <Card elevation="md" padding="lg" className="mb-8 overflow-hidden">
-                <div className="text-base md:text-xl text-right leading-relaxed space-y-4 font-arabic" style={{ lineHeight: '2.2' }}>
-                  <div className="whitespace-pre-wrap bg-gray-50 p-3 md:p-6 rounded-lg border-r-4 border-primary break-words">
-                    {story.content_arabic}
-                  </div>
-                </div>
-              </Card>
-
-              {/* Progress Bar */}
-              <Card elevation="sm" padding="lg" className="mb-6">
-                <div className="mb-3">
-                  <p className="text-gray-200 mb-2">تقدم القراءة</p>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <motion.div
-                      className="bg-gradient-to-r from-primary to-secondary h-3 rounded-full"
-                      initial={{ width: '0%' }}
-                      animate={{ width: '75%' }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                </div>
-                <p className="text-sm text-gray-200">٣ من ٤ فقرات</p>
-              </Card>
-
-              {/* Voice Recording Card */}
-              <Card elevation="md" padding="lg" className="mb-6">
-                <div className="mb-4">
-                  <h3 className="text-lg md:text-xl font-bold text-white mb-2">🎤 تسجيل القراءة</h3>
-                  <p className="text-gray-200 text-xs md:text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
+                {/* Questions (left on desktop, below on mobile) */}
+                <div className="order-2 md:order-1">
+                  <StoryQuestions
+                    storyId={storyId}
+                    onStartRecording={startRecording}
+                    onStopRecording={stopRecording}
+                    isRecordingExternal={isRecording}
+                    hasAudioExternal={!!audioUrl}
+                    isPlayingExternal={isPlaying}
+                    onTogglePlay={() => (isPlaying ? stopAudio() : playAudio())}
+                    onResetRecording={resetRecording}
+                    onSubmitRecording={handleComplete}
+                  />
                 </div>
 
-                {/* Recording Status */}
-                {isRecording && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="mb-4 p-4 bg-red-50 rounded-lg border-2 border-red-500"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="text-red-700 font-bold">جاري التسجيل...</span>
+                {/* Story (right on desktop, above on mobile) */}
+                <div className="order-1 md:order-2">
+                  {/* Info */}
+                  <Card className="mb-6" elevation="sm">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                      <div>
+                        <p className="text-gray-200 text-sm">وقت القراءة</p>
+                        <p className="text-xl md:text-2xl font-bold text-primary">{formatTime(readingTime)}</p>
                       </div>
-                      <span className="text-red-700 font-bold">{formatTime(recordingDuration)}</span>
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`inline-block px-3 py-1 md:px-4 md:py-2 text-white text-sm rounded-full font-bold ${
+                          story.difficulty === 'easy' ? 'bg-accent-green' :
+                          story.difficulty === 'medium' ? 'bg-secondary' : 'bg-accent-red'
+                        }`}>
+                          {story.difficulty === 'easy' ? 'سهل' : 
+                           story.difficulty === 'medium' ? 'متوسط' : 'صعب'}
+                        </span>
+                        <span className="inline-block px-3 py-1 md:px-4 md:py-2 bg-primary text-white text-sm rounded-full font-bold">
+                          الصف {story.grade_level}
+                        </span>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
+                  </Card>
 
-                {/* Controls */}
-                <div className="flex gap-2 md:gap-3 flex-wrap">
-                  {!audioUrl ? (
-                    <>
-                      {!isRecording ? (
-                        <Button
-                          onClick={startRecording}
-                          variant="primary"
-                          size="md"
-                          className="flex-1 min-w-[120px] text-sm md:text-base"
-                        >
-                          <span className="mr-2">🎤</span>بدء التسجيل
-                        </Button>
+                  {/* Story */}
+                  <Card elevation="md" padding="lg" className="mb-6 overflow-hidden">
+                    <div className="text-base md:text-xl text-right leading-relaxed space-y-4 font-arabic" style={{ lineHeight: '2.2' }}>
+                      <div className="whitespace-pre-wrap p-3 md:p-6 rounded-lg break-words">
+                        {story.content_arabic}
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Voice Recording Card */}
+                  <Card elevation="md" padding="lg" className="mb-6" id="student-recording-section">
+                    <div className="mb-4">
+                      <h3 className="text-lg md:text-xl font-bold text-white mb-2">🎤 تسجيل القراءة</h3>
+                      <p className="text-gray-200 text-xs md:text-sm">سجل نفسك وأنت تقرأ، ثم استمع إلى تسجيلك</p>
+                    </div>
+
+                    {isRecording && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mb-4 p-4 bg-red-50 rounded-lg border-2 border-red-500"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-red-700 font-bold">جاري التسجيل...</span>
+                          </div>
+                          <span className="text-red-700 font-bold">{formatTime(recordingDuration)}</span>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className="flex gap-2 md:gap-3 flex-wrap">
+                      {!audioUrl ? (
+                        <>
+                          {!isRecording ? (
+                            <Button
+                              onClick={startRecording}
+                              variant="primary"
+                              size="md"
+                              className="flex-1 min-w-[120px] text-sm md:text-base"
+                            >
+                              <span className="mr-2">🎤</span>بدء التسجيل
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={stopRecording}
+                              variant="danger"
+                              size="md"
+                              className="flex-1 min-w-[120px] text-sm md:text-base"
+                            >
+                              <span className="mr-2">⏹️</span>إيقاف
+                            </Button>
+                          )}
+                        </>
                       ) : (
-                        <Button
-                          onClick={stopRecording}
-                          variant="danger"
-                          size="md"
-                          className="flex-1 min-w-[120px] text-sm md:text-base"
-                        >
-                          <span className="mr-2">⏹️</span>إيقاف
-                        </Button>
+                        <>
+                          <Button
+                            onClick={isPlaying ? stopAudio : playAudio}
+                            variant={isPlaying ? "secondary" : "primary"}
+                            size="md"
+                            className="flex-1 min-w-[120px] text-sm md:text-base"
+                          >
+                            {isPlaying ? (
+                              <>
+                                <span className="mr-2">⏸️</span>إيقاف
+                              </>
+                            ) : (
+                              <>
+                                <span className="mr-2">▶️</span>تشغيل
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={deleteRecording}
+                            variant="ghost"
+                            size="md"
+                            className="border-2 border-gray-300 text-sm md:text-base"
+                          >
+                            <span className="mr-2">🗑️</span>حذف
+                          </Button>
+                        </>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={isPlaying ? stopAudio : playAudio}
-                        variant={isPlaying ? "secondary" : "primary"}
-                        size="md"
-                        className="flex-1 min-w-[120px] text-sm md:text-base"
-                      >
-                        {isPlaying ? (
-                          <>
-                            <span className="mr-2">⏸️</span>إيقاف
-                          </>
-                        ) : (
-                          <>
-                            <span className="mr-2">▶️</span>تشغيل
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={deleteRecording}
-                        variant="ghost"
-                        size="md"
-                        className="border-2 border-gray-300 text-sm md:text-base"
-                      >
-                        <span className="mr-2">🗑️</span>حذف
-                      </Button>
-                    </>
-                  )}
+                    </div>
+
+                    {audioUrl && (
+                      <audio ref={audioRef} src={audioUrl} />
+                    )}
+                  </Card>
+
+                  {/* Actions moved to floating main bar */}
                 </div>
-
-                {/* Hidden Audio Player */}
-                {audioUrl && (
-                  <audio ref={audioRef} src={audioUrl} />
-                )}
-              </Card>
-
-              {/* Actions */}
-              <div className="flex gap-2 md:gap-4">
-                <Button
-                  onClick={() => setIsFullScreen(true)}
-                  variant="secondary"
-                  size="md"
-                  className="flex-1 text-sm md:text-base"
-                >
-                  ملء الشاشة
-                </Button>
-                <Button
-                  onClick={handleComplete}
-                  variant={!audioUrl ? "ghost" : "primary"}
-                  size="md"
-                  className={!audioUrl ? "flex-1 text-sm md:text-base bg-white/30 hover:bg-white/40 border-2 border-yellow-400" : "flex-1 text-sm md:text-base"}
-                >
-                  {!audioUrl ? "📹 يجب التسجيل أولاً" : "انتهيت من القراءة ✓"}
-                </Button>
               </div>
             </motion.div>
           </div>

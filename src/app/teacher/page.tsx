@@ -9,6 +9,7 @@ import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
 import toast, { Toaster } from 'react-hot-toast'
 import { Users, BookOpen, FileText, Star, BarChart3, Trophy, GraduationCap, LogOut } from 'lucide-react'
+import { showPageLoader } from '@/components/PageTransitionLoader'
 
 export default function TeacherDashboard() {
   const router = useRouter()
@@ -23,6 +24,7 @@ export default function TeacherDashboard() {
   const handleLogout = () => {
     const { logout } = useAppStore.getState()
     logout()
+    showPageLoader()
     router.push('/')
   }
 
@@ -64,7 +66,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/students')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/teacher/students')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <Users className="w-16 h-16 text-primary" />
@@ -83,7 +88,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/stories')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/teacher/stories')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <BookOpen className="w-16 h-16 text-accent-green" />
@@ -102,7 +110,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/forms')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/teacher/forms')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <FileText className="w-16 h-16 text-secondary" />
@@ -121,7 +132,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/grading')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/teacher/grading')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <Star className="w-16 h-16 text-yellow-400" />
@@ -140,7 +154,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/teacher/analytics')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/teacher/analytics')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <BarChart3 className="w-16 h-16 text-purple-400" />
@@ -159,7 +176,10 @@ export default function TeacherDashboard() {
             >
               <Card
                 className="cursor-pointer hover:shadow-hover transition-all p-6 text-center"
-                onClick={() => router.push('/leaderboard')}
+                onClick={() => {
+                  showPageLoader()
+                  router.push('/leaderboard')
+                }}
               >
                 <div className="flex justify-center mb-3">
                   <Trophy className="w-16 h-16 text-amber-400" />

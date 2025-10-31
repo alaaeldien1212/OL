@@ -10,6 +10,7 @@ import { authService, leaderboardService } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
 import { Trophy, Crown, Medal, Users, BookOpen, LogIn, UserCheck, Shield, GraduationCap } from 'lucide-react'
+import { showPageLoader } from '@/components/PageTransitionLoader'
 
 interface LeaderboardEntry {
   id: string
@@ -29,7 +30,6 @@ export default function HomePage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true)
   const [showLoginForm, setShowLoginForm] = useState(false)
-  const [loginType, setLoginType] = useState<'admin' | 'teacher' | 'student'>('student')
   const [accessCode, setAccessCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [studentName, setStudentName] = useState('')
@@ -44,49 +44,9 @@ export default function HomePage() {
       setIsLoadingLeaderboard(true)
       const data = await leaderboardService.getLeaderboard()
       console.log('Loaded leaderboard data:', data)
-      let top5 = (data || []).slice(0, 5)
+      const top5 = (data || []).slice(0, 5)
       
-      // Add mock data if we have less than 5 students to show full leaderboard
-      const mockData = [
-        {
-          student_id: 'mock-3',
-          name: 'محمد عبدالله',
-          combined_score: 128,
-          avg_grade: 87,
-          current_title: 'قارئ نشط',
-          stories_read: 6,
-          forms_submitted: 4,
-          rank: 3
-        },
-        {
-          student_id: 'mock-4',
-          name: 'فاطمة علي',
-          combined_score: 115,
-          avg_grade: 85,
-          current_title: 'قارئ محترف',
-          stories_read: 5,
-          forms_submitted: 3,
-          rank: 4
-        },
-        {
-          student_id: 'mock-5',
-          name: 'خالد أحمد',
-          combined_score: 102,
-          avg_grade: 82,
-          current_title: 'قارئ مبتدئ',
-          stories_read: 4,
-          forms_submitted: 2,
-          rank: 5
-        }
-      ]
-      
-      // Fill empty positions with mock data
-      while (top5.length < 5) {
-        const mockIndex = top5.length >= 0 && top5.length < 3 ? top5.length : 0
-        top5.push(mockData[mockIndex])
-      }
-      
-      console.log('Top 5 students (including mock):', top5)
+      console.log('Top 5 students:', top5)
       setLeaderboard(top5)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
@@ -107,21 +67,27 @@ export default function HomePage() {
         const student = await authService.registerStudent(accessCode, studentName)
         setUser(student, 'student')
         toast.success(`مرحباً ${studentName}! تم إنشاء حسابك بنجاح 🎉`)
+        showPageLoader()
         router.push('/student')
       } else {
-        // Regular login
+        // Student login only
         const result = await authService.loginWithAccessCode(accessCode)
-        setUser(result.user, result.type)
         
-        if (result.type === 'admin') {
-          toast.success('مرحباً أيها المسؤول! 👨‍💼')
-          router.push('/admin')
-        } else if (result.type === 'teacher') {
-          toast.success(`مرحباً ${result.user.name}! 👩‍🏫`)
-          router.push('/teacher')
-        } else {
+        if (result.type === 'student') {
+          setUser(result.user, result.type)
           toast.success(`مرحباً ${result.user.name}! 👦`)
+          showPageLoader()
           router.push('/student')
+        } else {
+          // If admin or teacher, redirect to access portal
+          toast.error('للمسؤولين والمعلمين، الرجاء استخدام بوابة الإدارة')
+          setShowLoginForm(false)
+          setTimeout(() => {
+            showPageLoader()
+            router.push('/access')
+          }, 1500)
+          setIsLoading(false)
+          setLoading(false)
         }
       }
     } catch (error: any) {
@@ -134,7 +100,6 @@ export default function HomePage() {
       } else {
         toast.error(error.message)
       }
-    } finally {
       setIsLoading(false)
       setLoading(false)
     }
@@ -160,18 +125,38 @@ export default function HomePage() {
 
   return (
     <AnimatedBackground>
-      <div className="w-full p-2 md:p-4" dir="rtl">
-        <div className="max-w-7xl mx-auto">
+      <div className="w-full min-h-screen flex items-center justify-center px-2 md:px-4 py-4" dir="rtl">
+        <div className="max-w-7xl w-full">
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-2 md:mb-3"
+            className="text-center mb-4 md:mb-6"
           >
-            <h1 className="text-xl md:text-4xl font-bold text-white mb-1">
-              📚 المكتبة الإلكترونية للقصص
-            </h1>
+            <div className="flex flex-col items-center gap-0.5 mb-2">
+              <motion.div
+                animate={{ 
+                  y: [0, -5, 0],
+                  scale: [1, 1.02, 1]
+                }}
+                transition={{ 
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+                className="relative"
+              >
+                <img 
+                  src="/logow.png" 
+                  alt="البيان" 
+                  className="w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-2xl"
+                />
+              </motion.div>
+              <h1 className="text-xl md:text-4xl font-bold text-white">
+                البيان
+              </h1>
+            </div>
             <p className="text-sm md:text-base text-gray-300 mb-2">
               منصة تعليمية تفاعلية لتعلم اللغة العربية
             </p>
@@ -358,65 +343,23 @@ export default function HomePage() {
             </Card>
           </motion.div>
 
-          {/* Login Section */}
+          {/* Student Login Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 mb-4"
+            className="max-w-md mx-auto mb-4"
           >
-            {/* Admin Login */}
-            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
-              <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-2" />
-              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول المسؤول</h3>
-              <p className="text-gray-300 mb-2 text-xs">إدارة النظام والمعلمين</p>
+            <Card className="p-4 md:p-6 text-center hover:scale-105 transition-transform duration-200">
+              <BookOpen className="w-12 h-12 md:w-16 md:h-16 text-accent-green mx-auto mb-3" />
+              <h3 className="text-lg md:text-xl font-bold text-white mb-2">دخول الطالب</h3>
+              <p className="text-gray-300 mb-4 text-sm md:text-base">قراءة القصص وحل النماذج</p>
               <Button
-                onClick={() => {
-                  setLoginType('admin')
-                  setShowLoginForm(true)
-                }}
-                variant="primary"
-                size="sm"
-                className="w-full"
-                icon={<LogIn className="w-4 h-4 md:w-5 md:h-5" />}
-              >
-                دخول المسؤول
-              </Button>
-            </Card>
-
-            {/* Teacher Login */}
-            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
-              <GraduationCap className="w-6 h-6 md:w-8 md:h-8 text-secondary mx-auto mb-2" />
-              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول المعلم</h3>
-              <p className="text-gray-300 mb-2 text-xs">إدارة الطلاب والقصص</p>
-              <Button
-                onClick={() => {
-                  setLoginType('teacher')
-                  setShowLoginForm(true)
-                }}
-                variant="secondary"
-                size="sm"
-                className="w-full"
-                icon={<UserCheck className="w-4 h-4 md:w-5 md:h-5" />}
-              >
-                دخول المعلم
-              </Button>
-            </Card>
-
-            {/* Student Login */}
-            <Card className="p-2 md:p-3 text-center hover:scale-105 transition-transform duration-200">
-              <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-accent-green mx-auto mb-2" />
-              <h3 className="text-sm md:text-base font-bold text-white mb-1">دخول الطالب</h3>
-              <p className="text-gray-300 mb-2 text-xs">قراءة القصص وحل النماذج</p>
-              <Button
-                onClick={() => {
-                  setLoginType('student')
-                  setShowLoginForm(true)
-                }}
+                onClick={() => setShowLoginForm(true)}
                 variant="success"
-                size="sm"
+                size="lg"
                 className="w-full"
-                icon={<BookOpen className="w-4 h-4 md:w-5 md:h-5" />}
+                icon={<BookOpen className="w-5 h-5" />}
               >
                 دخول الطالب
               </Button>
@@ -440,13 +383,9 @@ export default function HomePage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                  {loginType === 'admin' && <Shield className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />}
-                  {loginType === 'teacher' && <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-secondary flex-shrink-0" />}
-                  {loginType === 'student' && <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-accent-green flex-shrink-0" />}
+                  <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-accent-green flex-shrink-0" />
                   <h3 className="text-lg md:text-xl font-bold text-white">
-                    {loginType === 'admin' && 'دخول المسؤول'}
-                    {loginType === 'teacher' && 'دخول المعلم'}
-                    {loginType === 'student' && 'دخول الطالب'}
+                    دخول الطالب
                   </h3>
                 </div>
 
@@ -509,20 +448,6 @@ export default function HomePage() {
                     </Button>
                   </div>
                 </form>
-
-                <div className="mt-4 p-3 bg-slate-700 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2 text-sm">رموز الدخول التجريبية:</h4>
-                  <div className="text-xs text-gray-300 space-y-1">
-                    <p><strong>مسؤول:</strong> ADMIN2025</p>
-                    <p><strong>معلم:</strong> TEACH3A2025, TEACH4A2025, TEACH6A2025</p>
-                    <div className="border-t border-slate-600 pt-2 mt-2">
-                      <p><strong>طالب:</strong> STUDENT002, STUDENT003</p>
-                      <p className="text-gray-400 text-xs mt-1">
-                        💡 أول دخول يتطلب إدخال الاسم الكامل
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             </motion.div>
           )}

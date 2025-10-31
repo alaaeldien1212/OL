@@ -50,8 +50,12 @@ export default function AdminTeacherManagement() {
   })
 
   useEffect(() => {
+    if (userRole !== 'admin') {
+      router.push('/')
+      return
+    }
     loadTeachers()
-  }, [])
+  }, [userRole, router])
 
   const loadTeachers = async () => {
     try {
@@ -153,7 +157,6 @@ export default function AdminTeacherManagement() {
   }
 
   if (userRole !== 'admin') {
-    router.push('/')
     return null
   }
 
@@ -369,9 +372,12 @@ export default function AdminTeacherManagement() {
                           <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-300">آخر دخول:</span>
-                            <span className="text-white font-semibold">
+                            <span className="text-white font-semibold text-xs md:text-sm">
                               {teacher.last_login_at
-                                ? new Date(teacher.last_login_at).toLocaleDateString('ar-SA')
+                                ? new Date(teacher.last_login_at).toLocaleString('ar-SA', {
+                                    dateStyle: 'short',
+                                    timeStyle: 'short'
+                                  })
                                 : 'لم يسجل دخول'}
                             </span>
                           </div>

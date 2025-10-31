@@ -13,11 +13,19 @@ import toast, { Toaster } from 'react-hot-toast'
 
 export default function StudentProfile() {
   const router = useRouter()
-  const { user, isAuthenticated } = useAppStore()
+  const { user, isAuthenticated, hydrated } = useAppStore()
 
-  if (!isAuthenticated) {
-    router.push('/')
-    return null
+  if (!hydrated || !isAuthenticated) {
+    return (
+      <AnimatedBackground>
+        <div className="w-full h-full flex items-center justify-center" dir="rtl">
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-bounce">👤</div>
+            <p className="text-2xl font-bold text-white">جاري التحميل...</p>
+          </div>
+        </div>
+      </AnimatedBackground>
+    )
   }
 
   const studentName = (user as any)?.name || 'طالب'

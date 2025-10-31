@@ -29,6 +29,9 @@ export default function StudentManagement() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newStudentName, setNewStudentName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [editingCodeId, setEditingCodeId] = useState<string | null>(null)
+  const [editedCode, setEditedCode] = useState('')
+  const [isUpdatingCode, setIsUpdatingCode] = useState(false)
 
   useEffect(() => {
     if (userRole !== 'teacher') {
@@ -139,6 +142,63 @@ export default function StudentManagement() {
     }
   }
 
+  const startEditingCode = (studentId: string, currentCode: string) => {
+    setEditingCodeId(studentId)
+    setEditedCode(currentCode)
+  }
+
+  const cancelEditingCode = () => {
+    setEditingCodeId(null)
+    setEditedCode('')
+  }
+
+  const updateAccessCode = async (studentId: string) => {
+    if (!editedCode.trim()) {
+      toast.error('الرجاء إدخال رمز وصول')
+      return
+    }
+
+    // Validate code format (only letters and numbers)
+    const codeRegex = /^[A-Z0-9]+$/
+    if (!codeRegex.test(editedCode)) {
+      toast.error('رمز الوصول يجب أن يحتوي على أحرف إنجليزية كبيرة وأرقام فقط')
+      return
+    }
+
+    if (editedCode.length < 4) {
+      toast.error('رمز الوصول يجب أن يكون 4 أحرف على الأقل')
+      return
+    }
+
+    try {
+      setIsUpdatingCode(true)
+      const teacherData = user as any
+
+      // Use the new RPC function for secure update
+      const { data, error } = await supabase.rpc('teacher_update_student_code', {
+        teacher_access_code: teacherData.access_code,
+        student_id: studentId,
+        new_access_code: editedCode
+      })
+
+      if (error) {
+        console.error('Error updating access code:', error)
+        toast.error(`فشل تحديث رمز الوصول: ${error.message}`)
+        return
+      }
+
+      toast.success('تم تحديث رمز الوصول بنجاح!')
+      setEditingCodeId(null)
+      setEditedCode('')
+      loadStudents()
+    } catch (error: any) {
+      console.error('Error updating access code:', error)
+      toast.error(`فشل تحديث رمز الوصول: ${error.message}`)
+    } finally {
+      setIsUpdatingCode(false)
+    }
+  }
+
   return (
     <AnimatedBackground>
       <Toaster position="top-center" />
@@ -167,7 +227,7 @@ export default function StudentManagement() {
                 <span className="md:hidden">➕ إضافة</span>
               </Button>
               <Button
-                onClick={() => router.back()}
+                onClick={() => router.push('/teacher')}
                 variant="ghost"
                 size="sm"
                 className="flex-1 md:flex-none"
@@ -240,17 +300,56 @@ export default function StudentManagement() {
                     {/* Access Code */}
                     <div className="bg-slate-900 p-2 md:p-3 rounded-lg mb-3 border border-slate-700">
                       <p className="text-xs text-gray-400 mb-1">رمز الوصول</p>
-                      <div className="flex items-center justify-between">
-                        <code className="text-sm md:text-lg font-mono text-primary truncate flex-1">
-                          {student.access_code}
-                        </code>
-                        <button
-                          onClick={() => copyAccessCode(student.access_code)}
-                          className="text-gray-400 hover:text-white transition-colors flex-shrink-0 ml-2"
-                        >
-                          📋
-                        </button>
-                      </div>
+                      {editingCodeId === student.id ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editedCode}
+                            onChange={(e) => setEditedCode(e.target.value.toUpperCase())}
+                            className="w-full px-3 py-2 text-sm md:text-base font-mono border border-slate-600 rounded bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="أدخل رمز جديد"
+                            disabled={isUpdatingCode}
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => updateAccessCode(student.id)}
+                              disabled={isUpdatingCode}
+                              className="flex-1 px-3 py-1.5 bg-primary text-white rounded text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isUpdatingCode ? 'جاري الحفظ...' : 'حفظ'}
+                            </button>
+                            <button
+                              onClick={cancelEditingCode}
+                              disabled={isUpdatingCode}
+                              className="flex-1 px-3 py-1.5 bg-slate-700 text-white rounded text-sm hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              إلغاء
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-2">
+                          <code className="text-sm md:text-lg font-mono text-primary truncate flex-1">
+                            {student.access_code}
+                          </code>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => startEditingCode(student.id, student.access_code)}
+                              className="text-gray-400 hover:text-white transition-colors"
+                              title="تعديل الرمز"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => copyAccessCode(student.access_code)}
+                              className="text-gray-400 hover:text-white transition-colors"
+                              title="نسخ الرمز"
+                            >
+                              📋
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Stats */}
