@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { useAppStore } from './store'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+// Use placeholder values during build time if env vars are not set
+// These will be replaced at runtime when env vars are available
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn('Supabase credentials not configured')
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn('Supabase credentials not configured - using placeholders for build')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
