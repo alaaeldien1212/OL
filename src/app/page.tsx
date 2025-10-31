@@ -202,7 +202,7 @@ export default function HomePage() {
                           <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
                         <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[120px] md:max-w-[120px]">
-                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[1].name}</h3>
+                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white break-words leading-tight px-1">{leaderboard[1].name}</h3>
                           <p className="text-[10px] sm:text-xs md:text-sm text-gray-300">المركز الثاني</p>
                           {leaderboard[1].current_title && (
                             <div className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full mt-1 truncate">
@@ -231,7 +231,7 @@ export default function HomePage() {
                           <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10" />
                         </div>
                         <div className="bg-gradient-to-r from-slate-700 to-slate-800 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[140px] md:max-w-[140px] border-2 border-yellow-500/30">
-                          <h3 className="text-sm sm:text-base md:text-xl font-bold text-white truncate">{leaderboard[0].name}</h3>
+                          <h3 className="text-sm sm:text-base md:text-xl font-bold text-white break-words leading-tight px-1">{leaderboard[0].name}</h3>
                           <p className="text-[10px] sm:text-xs md:text-sm text-yellow-300">المركز الأول</p>
                           {leaderboard[0].current_title && (
                             <div className="text-xs bg-yellow-500/20 text-yellow-200 px-2 py-1 rounded-full mt-1 truncate">
@@ -260,7 +260,7 @@ export default function HomePage() {
                           <Medal className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
                         <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-4 text-center w-full md:w-auto md:min-w-[120px] md:max-w-[120px]">
-                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white truncate">{leaderboard[2].name}</h3>
+                          <h3 className="text-xs sm:text-sm md:text-lg font-bold text-white break-words leading-tight px-1">{leaderboard[2].name}</h3>
                           <p className="text-xs md:text-sm text-gray-300">المركز الثالث</p>
                           {leaderboard[2].current_title && (
                             <div className="text-xs bg-amber-600/50 text-amber-300 px-2 py-1 rounded-full mt-1 truncate">
@@ -292,7 +292,7 @@ export default function HomePage() {
                             <Medal className="w-5 h-5 md:w-7 md:h-7" />
                           </div>
                           <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-3 text-center min-w-full">
-                            <h3 className="text-sm md:text-base font-bold text-white truncate mb-1">{leaderboard[3].name}</h3>
+                            <h3 className="text-sm md:text-base font-bold text-white break-words leading-tight px-1 mb-1">{leaderboard[3].name}</h3>
                             <div className="text-xs md:text-sm text-gray-300 mb-1">المركز الرابع</div>
                             {leaderboard[3].current_title && (
                               <div className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full my-1 truncate">
@@ -320,7 +320,7 @@ export default function HomePage() {
                             <Medal className="w-5 h-5 md:w-7 md:h-7" />
                           </div>
                           <div className="bg-slate-700/80 backdrop-blur-sm rounded-lg p-2 md:p-3 text-center min-w-full">
-                            <h3 className="text-sm md:text-base font-bold text-white truncate mb-1">{leaderboard[4].name}</h3>
+                            <h3 className="text-sm md:text-base font-bold text-white break-words leading-tight px-1 mb-1">{leaderboard[4].name}</h3>
                             <div className="text-xs md:text-sm text-gray-300 mb-1">المركز الخامس</div>
                             {leaderboard[4].current_title && (
                               <div className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full my-1 truncate">
