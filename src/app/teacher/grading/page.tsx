@@ -368,7 +368,7 @@ export default function GradingPage() {
                               المعدل النهائي
                             </label>
                             <p className="text-white font-bold text-lg md:text-xl">
-                              {Math.round((selectedSubmission.grade + selectedSubmission.voice_grade) / 2)}/100
+                              {Math.round(((selectedSubmission.grade ?? 0) + (selectedSubmission.voice_grade ?? 0)) / 2)}/100
                             </p>
                           </div>
                         )}

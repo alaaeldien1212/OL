@@ -522,7 +522,7 @@ export default function StudentDetailPage() {
                               المعدل النهائي
                             </label>
                             <p className="text-white font-bold text-lg md:text-xl">
-                              {Math.round((((selectedSubmission.grade ?? selectedSubmission.auto_graded) + (selectedSubmission.voice_grade || 0)) / 2))}/100
+                              {Math.round((((selectedSubmission.grade ?? selectedSubmission.auto_graded ?? 0) + (selectedSubmission.voice_grade ?? 0)) / 2))}/100
                             </p>
                           </div>
                         )}
