@@ -594,7 +594,11 @@ export default function StudentDetailPage() {
                           التسجيل الصوتي للقراءة 🎤
                         </label>
                         <div className="bg-slate-900 p-4 rounded-lg">
-                          <audio controls className="w-full">
+                          <audio
+                            key={selectedSubmission.audio_url || selectedSubmission.id}
+                            controls
+                            className="w-full"
+                          >
                             <source src={selectedSubmission.audio_url} type="audio/webm" />
                             متصفحك لا يدعم تشغيل الصوت
                           </audio>
