@@ -26,7 +26,7 @@ interface LeaderboardEntry {
 
 export default function HomePage() {
   const router = useRouter()
-  const { setUser, setError, setLoading } = useAppStore()
+  const { setUser, setError, setLoading, isAuthenticated, userRole, hydrated } = useAppStore()
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true)
   const [showLoginForm, setShowLoginForm] = useState(false)
@@ -38,6 +38,31 @@ export default function HomePage() {
   useEffect(() => {
     loadLeaderboard()
   }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    if (!isAuthenticated) return
+
+    const role = userRole
+    let destination = '/'
+
+    switch (role) {
+      case 'student':
+        destination = '/student'
+        break
+      case 'teacher':
+        destination = '/teacher'
+        break
+      case 'admin':
+        destination = '/admin'
+        break
+      default:
+        return
+    }
+
+    showPageLoader()
+    router.replace(destination)
+  }, [hydrated, isAuthenticated, userRole, router])
 
   const loadLeaderboard = async () => {
     try {
