@@ -123,10 +123,17 @@ export default function TeacherFormsPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from('form_templates')
-        .delete()
-        .eq('id', formId)
+      const teacherAccessCode = (user as any)?.access_code
+
+      if (!teacherAccessCode) {
+        toast.error('رمز المعلمة غير متاح')
+        return
+      }
+
+      const { error } = await supabase.rpc('teacher_delete_form', {
+        form_uuid: formId,
+        teacher_access_code: teacherAccessCode
+      })
 
       if (error) throw error
 
@@ -430,14 +437,42 @@ function EditFormTemplate({ form, onSuccess }: { form: FormTemplate; onSuccess: 
     setIsSubmitting(true)
 
     try {
-      const { error } = await supabase
-        .from('form_templates')
-        .update({
-          title_arabic: title,
-          description_arabic: description,
-          questions: questions
-        })
-        .eq('id', form.id)
+      const teacherAccessCode = (user as any)?.access_code
+
+      if (!teacherAccessCode) {
+        toast.error('رمز المعلمة غير متاح')
+        setIsSubmitting(false)
+        return
+      }
+
+      const formattedQuestions = questions.map((question: any) => {
+        const baseQuestion: any = {
+          id: question.id,
+          text_arabic: question.text_arabic,
+          type: question.type,
+          required: question.required,
+        }
+
+        if (question.type === 'multiple_choice') {
+          baseQuestion.options = (question.options || [])
+            .map((option: string) => String(option ?? '').trim())
+            .filter((option: string) => option.length > 0)
+          const trimmedCorrectAnswer = question.correct_answer ? String(question.correct_answer).trim() : null
+          baseQuestion.correct_answer = trimmedCorrectAnswer && baseQuestion.options.includes(trimmedCorrectAnswer)
+            ? trimmedCorrectAnswer
+            : null
+        }
+
+        return baseQuestion
+      })
+
+      const { error } = await supabase.rpc('teacher_update_form', {
+        form_uuid: form.id,
+        form_title: title,
+        form_description: description,
+        form_questions: formattedQuestions,
+        teacher_access_code: teacherAccessCode
+      })
 
       if (error) throw error
 
