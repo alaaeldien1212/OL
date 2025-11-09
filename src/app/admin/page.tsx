@@ -28,20 +28,19 @@ interface AdminAnalytics {
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const { user, userRole, isAuthenticated } = useAppStore()
+  const { user, userRole, isAuthenticated, hydrated } = useAppStore()
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    console.log('Admin page useEffect:', { isAuthenticated, userRole, user })
+    if (!hydrated) return
     if (!isAuthenticated || userRole !== 'admin') {
-      console.log('Redirecting to home page - not authenticated or not admin')
-      router.push('/')
-    } else {
-      console.log('Loading analytics for admin user')
-      loadAnalytics()
+      router.replace('/')
+      return
     }
-  }, [isAuthenticated, userRole, router])
+
+    loadAnalytics()
+  }, [hydrated, isAuthenticated, userRole, router])
 
   const loadAnalytics = async () => {
     try {

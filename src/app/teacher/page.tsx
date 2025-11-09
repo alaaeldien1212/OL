@@ -13,13 +13,15 @@ import { showPageLoader } from '@/components/PageTransitionLoader'
 
 export default function TeacherDashboard() {
   const router = useRouter()
-  const { user, userRole, isAuthenticated } = useAppStore()
+  const { user, userRole, isAuthenticated, hydrated } = useAppStore()
 
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated || userRole !== 'teacher') {
-      router.push('/')
+      router.replace('/')
+      return
     }
-  }, [isAuthenticated, userRole, router])
+  }, [hydrated, isAuthenticated, userRole, router])
 
   const handleLogout = () => {
     const { logout } = useAppStore.getState()

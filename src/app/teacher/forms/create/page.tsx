@@ -37,7 +37,7 @@ interface Question {
 
 export default function CreateForm() {
   const router = useRouter()
-  const { user, userRole } = useAppStore()
+  const { user, userRole, hydrated } = useAppStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Get teacher's assigned grade dynamically
@@ -61,12 +61,22 @@ export default function CreateForm() {
   const [stories, setStories] = useState<any[]>([])
 
   React.useEffect(() => {
+    if (!hydrated) return
+    if (userRole !== 'teacher') {
+      router.replace('/')
+      return
+    }
     loadStories()
-  }, [])
+  }, [hydrated, userRole, router])
 
   const loadStories = async () => {
     try {
       const teacherData = user as any
+
+      if (!teacherData?.access_code) {
+        toast.error('رمز المعلمة غير متاح')
+        return
+      }
 
       // Use the new teacher_get_stories function
       const { data, error } = await supabase.rpc('teacher_get_stories', {
@@ -206,8 +216,11 @@ export default function CreateForm() {
     }
   }
 
+  if (!hydrated) {
+    return null
+  }
+
   if (userRole !== 'teacher') {
-    router.push('/')
     return null
   }
 

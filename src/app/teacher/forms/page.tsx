@@ -34,7 +34,7 @@ interface FormTemplate {
 
 export default function TeacherFormsPage() {
   const router = useRouter()
-  const { user, isAuthenticated, userRole } = useAppStore()
+  const { user, isAuthenticated, userRole, hydrated } = useAppStore()
   const [forms, setForms] = useState<FormTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [editingForm, setEditingForm] = useState<FormTemplate | null>(null)
@@ -42,20 +42,26 @@ export default function TeacherFormsPage() {
   const [showEditForm, setShowEditForm] = useState(false)
 
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated || userRole !== 'teacher') {
-      router.push('/')
+      router.replace('/')
       return
     }
 
     loadForms()
-  }, [isAuthenticated, userRole, router])
+  }, [hydrated, isAuthenticated, userRole, router])
 
   const loadForms = async () => {
     try {
       setIsLoading(true)
       
       const teacherData = user as any
-      const teacherAccessCode = teacherData.access_code
+      const teacherAccessCode = teacherData?.access_code
+
+      if (!teacherAccessCode) {
+        toast.error('رمز المعلمة غير متاح')
+        return
+      }
       
       // Get teacher ID first
       const { data: teacherInfo } = await supabase
