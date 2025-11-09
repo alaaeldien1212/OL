@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
 import { gradingService, supabase } from '@/lib/supabase'
+import { inferAudioMimeFromUrl } from '@/lib/utils'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   Star, 
@@ -447,7 +448,10 @@ export default function GradingPage() {
                         </label>
                         <div className="bg-slate-900 p-4 rounded-lg">
                           <audio controls className="w-full">
-                            <source src={selectedSubmission.audio_url} type="audio/webm" />
+                            <source
+                              src={selectedSubmission.audio_url}
+                              type={inferAudioMimeFromUrl(selectedSubmission.audio_url)}
+                            />
                             متصفحك لا يدعم تشغيل الصوت
                           </audio>
                         </div>

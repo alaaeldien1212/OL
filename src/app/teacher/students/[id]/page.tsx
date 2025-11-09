@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
 import { gradingService, supabase } from '@/lib/supabase'
+import { inferAudioMimeFromUrl } from '@/lib/utils'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   Star, 
@@ -21,23 +22,6 @@ import {
   Filter,
   Sparkles
 } from 'lucide-react'
-
-const inferAudioMime = (url: string): string => {
-  if (!url) return 'audio/webm'
-  const cleanUrl = url.split('?')[0]
-  const ext = cleanUrl.split('.').pop()?.toLowerCase()
-  switch (ext) {
-    case 'mp3':
-      return 'audio/mpeg'
-    case 'mp4':
-    case 'm4a':
-      return 'audio/mp4'
-    case 'aac':
-      return 'audio/aac'
-    default:
-      return 'audio/webm'
-  }
-}
 
 interface Submission {
   id: string
@@ -618,7 +602,7 @@ export default function StudentDetailPage() {
                           >
                             <source
                               src={selectedSubmission.audio_url}
-                              type={inferAudioMime(selectedSubmission.audio_url)}
+                              type={inferAudioMimeFromUrl(selectedSubmission.audio_url)}
                             />
                             متصفحك لا يدعم تشغيل الصوت
                           </audio>

@@ -9,6 +9,38 @@ export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+export const normalizeMimeType = (mimeType?: string): string => {
+  if (!mimeType) return 'audio/webm'
+  return mimeType.split(';')[0].trim().toLowerCase()
+}
+
+export const getAudioExtensionFromMime = (mimeType?: string): string => {
+  const normalized = normalizeMimeType(mimeType)
+  switch (normalized) {
+    case 'audio/mp4':
+      return 'm4a'
+    case 'audio/mpeg':
+      return 'mp3'
+    case 'audio/aac':
+      return 'aac'
+    case 'audio/ogg':
+    case 'audio/opus':
+      return 'ogg'
+    default:
+      return 'webm'
+  }
+}
+
+export const inferAudioMimeFromUrl = (url?: string): string => {
+  if (!url) return 'audio/webm'
+  const cleanUrl = url.split('?')[0]?.toLowerCase() || ''
+  if (cleanUrl.endsWith('.mp3')) return 'audio/mpeg'
+  if (cleanUrl.endsWith('.m4a') || cleanUrl.endsWith('.mp4')) return 'audio/mp4'
+  if (cleanUrl.endsWith('.aac')) return 'audio/aac'
+  if (cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.opus')) return 'audio/ogg'
+  return 'audio/webm'
+}
+
 export const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
     case 'easy':

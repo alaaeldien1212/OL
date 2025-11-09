@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useRouter, useParams } from 'next/navigation'
 import { useAppStore } from '@/lib/store'
 import { supabase, adminGradingService, gradingService } from '@/lib/supabase'
+import { inferAudioMimeFromUrl } from '@/lib/utils'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import toast from 'react-hot-toast'
@@ -1005,7 +1006,10 @@ export default function GradeDetails() {
                       </label>
                       <div className="bg-slate-800 p-3 md:p-4 rounded-lg">
                         <audio controls className="w-full">
-                          <source src={viewingSubmission.audio_url} type="audio/webm" />
+                          <source
+                            src={viewingSubmission.audio_url}
+                            type={inferAudioMimeFromUrl(viewingSubmission.audio_url)}
+                          />
                           متصفحك لا يدعم تشغيل الصوت
                         </audio>
                       </div>
