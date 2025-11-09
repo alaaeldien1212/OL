@@ -115,7 +115,7 @@ const PERMISSION_LEVELS = {
 
 export default function AdminPermissions() {
   const router = useRouter()
-  const { user, userRole } = useAppStore()
+  const { user, userRole, hydrated, isAuthenticated } = useAppStore()
   const [teachers, setTeachers] = useState<TeacherPermission[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherPermission | null>(null)
@@ -123,12 +123,13 @@ export default function AdminPermissions() {
   const [isLoadingOverrides, setIsLoadingOverrides] = useState(false)
 
   useEffect(() => {
-    if (userRole !== 'admin') {
-      router.push('/')
+    if (!hydrated) return
+    if (!isAuthenticated || userRole !== 'admin') {
+      router.replace('/')
       return
     }
     loadTeachers()
-  }, [userRole, router])
+  }, [hydrated, isAuthenticated, userRole, router])
 
   const loadTeachers = async () => {
     try {
@@ -164,6 +165,10 @@ export default function AdminPermissions() {
       try {
         setIsLoadingOverrides(true)
         const adminData = user as any
+        if (!adminData?.access_code) {
+          toast.error('رمز المسؤول غير متاح')
+          return
+        }
         const { data, error } = await supabase.rpc('admin_get_teacher_permissions', {
           admin_access_code: adminData.access_code,
           target_teacher_id: selectedTeacher.teacher_id
@@ -319,7 +324,11 @@ export default function AdminPermissions() {
     }
   }
 
-  if (userRole !== 'admin') {
+  if (!hydrated) {
+    return null
+  }
+
+  if (!isAuthenticated || userRole !== 'admin') {
     return null
   }
 
