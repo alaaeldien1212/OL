@@ -207,18 +207,25 @@ export const storiesService = {
 }
 
 export const storageService = {
-  async uploadAudioRecording(audioBlob: Blob, studentAccessCode: string, storyId: string): Promise<string> {
+  async uploadAudioRecording(
+    audioBlob: Blob,
+    studentAccessCode: string,
+    storyId: string,
+    contentType: string = 'audio/webm',
+    fileExtension?: string
+  ): Promise<string> {
     try {
       // Create a unique filename
       const timestamp = Date.now()
-      const filename = `${studentAccessCode}_${storyId}_${timestamp}.webm`
+      const extension = (fileExtension || getExtensionFromMime(contentType) || 'webm').replace(/^\./, '')
+      const filename = `${studentAccessCode}_${storyId}_${timestamp}.${extension}`
       const filePath = `voice-recordings/${filename}`
 
       // Upload the blob to Supabase storage
       const { data, error } = await supabase.storage
         .from('student-recordings')
         .upload(filePath, audioBlob, {
-          contentType: 'audio/webm',
+          contentType,
           upsert: true
         })
 
@@ -238,6 +245,23 @@ export const storageService = {
       throw error
     }
   },
+}
+
+function getExtensionFromMime(mimeType: string): string | undefined {
+  switch (mimeType) {
+    case 'audio/webm':
+    case 'audio/webm;codecs=opus':
+      return 'webm'
+    case 'audio/mp4':
+    case 'audio/mp4;codecs=mp4a.40.2':
+      return 'mp4'
+    case 'audio/aac':
+      return 'aac'
+    case 'audio/mpeg':
+      return 'mp3'
+    default:
+      return undefined
+  }
 }
 
 export const formsService = {

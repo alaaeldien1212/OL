@@ -11,6 +11,23 @@ import { useAppStore } from '@/lib/store'
 import { storiesService, storageService } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
 
+const getExtensionFromMime = (mimeType: string): string => {
+  switch (mimeType) {
+    case 'audio/webm':
+    case 'audio/webm;codecs=opus':
+      return 'webm'
+    case 'audio/mp4':
+    case 'audio/mp4;codecs=mp4a.40.2':
+      return 'mp4'
+    case 'audio/aac':
+      return 'aac'
+    case 'audio/mpeg':
+      return 'mp3'
+    default:
+      return 'webm'
+  }
+}
+
 export default function StoryReader() {
   const router = useRouter()
   const params = useParams()
@@ -27,6 +44,8 @@ export default function StoryReader() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [recordingDuration, setRecordingDuration] = useState(0)
+  const [recordingMimeType, setRecordingMimeType] = useState<string>('audio/webm')
+  const [recordingExtension, setRecordingExtension] = useState<string>('webm')
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const recordingDurationRef = useRef<NodeJS.Timeout | null>(null)
@@ -149,24 +168,41 @@ export default function StoryReader() {
         throw permError
       }
       
-      // Use MediaRecorder with basic configuration
-      let mimeType = 'audio/webm' // Default
-      
-      // Try to find a supported MIME type - simpler approach
-      try {
-        if (MediaRecorder.isTypeSupported('audio/webm')) {
-          mimeType = 'audio/webm'
-          console.log('✅ Using audio/webm')
-        } else {
-          console.log('⚠️ audio/webm not supported')
-        }
-      } catch (e) {
-        console.log('⚠️ Could not check MIME type support')
+      // Determine best supported MIME type
+      const mimeCandidates = [
+        { type: 'audio/webm;codecs=opus', extension: 'webm' },
+        { type: 'audio/webm', extension: 'webm' },
+        { type: 'audio/mp4;codecs=mp4a.40.2', extension: 'mp4' },
+        { type: 'audio/mp4', extension: 'mp4' },
+        { type: 'audio/aac', extension: 'aac' },
+        { type: 'audio/mpeg', extension: 'mp3' },
+      ]
+
+      let selectedCandidate: { type?: string; extension: string } | null = null
+      if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
+        selectedCandidate = mimeCandidates.find(candidate => {
+          try {
+            return !!(candidate.type && MediaRecorder.isTypeSupported(candidate.type))
+          } catch {
+            return false
+          }
+        }) || null
       }
-      
-      console.log('Creating MediaRecorder with mimeType:', mimeType)
-      const mediaRecorder = new MediaRecorder(stream)
+
+      if (!selectedCandidate) {
+        selectedCandidate = { type: undefined, extension: 'webm' }
+      }
+
+      console.log('Creating MediaRecorder with mimeType:', selectedCandidate.type || 'default')
+      const mediaRecorder = selectedCandidate.type
+        ? new MediaRecorder(stream, { mimeType: selectedCandidate.type })
+        : new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
+
+      const effectiveMimeType = mediaRecorder.mimeType || selectedCandidate.type || 'audio/webm'
+      const effectiveExtension = selectedCandidate.extension || getExtensionFromMime(effectiveMimeType) || 'webm'
+      setRecordingMimeType(effectiveMimeType)
+      setRecordingExtension(effectiveExtension)
       
       const chunks: Blob[] = []
       
@@ -179,7 +215,7 @@ export default function StoryReader() {
       
       mediaRecorder.onstop = () => {
         console.log('⏹️ Recording stopped, creating blob from', chunks.length, 'chunks')
-        const blob = new Blob(chunks, { type: 'audio/webm' })
+        const blob = new Blob(chunks, { type: effectiveMimeType })
         const url = URL.createObjectURL(blob)
         setAudioBlob(blob)
         setAudioUrl(url)
@@ -295,6 +331,8 @@ export default function StoryReader() {
       setAudioUrl(null)
       setAudioBlob(null)
       setIsPlaying(false)
+      setRecordingMimeType('audio/webm')
+      setRecordingExtension('webm')
       toast.success('تم حذف التسجيل')
     }
   }
@@ -322,7 +360,13 @@ export default function StoryReader() {
       const studentAccessCode = studentData.access_code
       
       try {
-        const uploadedAudioUrl = await storageService.uploadAudioRecording(audioBlob, studentAccessCode, storyId)
+        const uploadedAudioUrl = await storageService.uploadAudioRecording(
+          audioBlob,
+          studentAccessCode,
+          storyId,
+          recordingMimeType,
+          recordingExtension
+        )
         
         // Store the audio URL in localStorage with story ID as key
         const storageKey = `audio_recording_${storyId}`

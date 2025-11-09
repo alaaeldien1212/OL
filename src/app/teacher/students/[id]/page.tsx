@@ -22,6 +22,23 @@ import {
   Sparkles
 } from 'lucide-react'
 
+const inferAudioMime = (url: string): string => {
+  if (!url) return 'audio/webm'
+  const cleanUrl = url.split('?')[0]
+  const ext = cleanUrl.split('.').pop()?.toLowerCase()
+  switch (ext) {
+    case 'mp3':
+      return 'audio/mpeg'
+    case 'mp4':
+    case 'm4a':
+      return 'audio/mp4'
+    case 'aac':
+      return 'audio/aac'
+    default:
+      return 'audio/webm'
+  }
+}
+
 interface Submission {
   id: string
   student_id: string
@@ -599,7 +616,10 @@ export default function StudentDetailPage() {
                             controls
                             className="w-full"
                           >
-                            <source src={selectedSubmission.audio_url} type="audio/webm" />
+                            <source
+                              src={selectedSubmission.audio_url}
+                              type={inferAudioMime(selectedSubmission.audio_url)}
+                            />
                             متصفحك لا يدعم تشغيل الصوت
                           </audio>
                         </div>
