@@ -232,7 +232,7 @@ export default function StoryQuestions(props: Props) {
         localStorage.removeItem(storageKey)
       }
 
-      toast.success('تم إرسال الإجابات بنجاح! 🎉')
+      toast.success('أحسنتِ يا قارئة متميزة! 🌟 انتهيتِ من المهمة بنجاح')
       if (onSubmitted) {
         onSubmitted()
       } else {
