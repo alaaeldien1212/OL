@@ -213,23 +213,34 @@ export const storageService = {
       // Create a unique filename
       const timestamp = Date.now()
       const mimeType = normalizeMimeType(audioBlob.type)
-      const extension = getAudioExtensionFromMime(mimeType)
+      const uploadMimeType = mimeType === 'audio/mp4' ? 'audio/m4a' : mimeType
+      const extension = getAudioExtensionFromMime(uploadMimeType)
       const filename = `${studentAccessCode}_${storyId}_${timestamp}.${extension}`
       const filePath = `voice-recordings/${filename}`
 
       // Upload the blob to Supabase storage
-      const file = new File([audioBlob], filename, { type: mimeType })
+      const file = new File([audioBlob], filename, { type: uploadMimeType })
 
-      const { data, error } = await supabase.storage
+      let uploadResult = await supabase.storage
         .from('student-recordings')
         .upload(filePath, file, {
-          contentType: mimeType,
+          contentType: uploadMimeType,
           upsert: true
         })
+      if (uploadResult.error && uploadMimeType === 'audio/m4a') {
+        console.warn('Upload failed with audio/m4a, retrying with application/octet-stream fallback')
+        const fallbackFile = new File([audioBlob], filename, { type: 'application/octet-stream' })
+        uploadResult = await supabase.storage
+          .from('student-recordings')
+          .upload(filePath, fallbackFile, {
+            contentType: 'application/octet-stream',
+            upsert: true
+          })
+      }
 
-      if (error) {
-        console.error('Error uploading audio:', error)
-        throw error
+      if (uploadResult.error) {
+        console.error('Error uploading audio:', uploadResult.error)
+        throw uploadResult.error
       }
 
       // Get the public URL

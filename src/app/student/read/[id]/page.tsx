@@ -204,7 +204,7 @@ export default function StoryReader() {
         const url = URL.createObjectURL(blob)
         setAudioBlob(blob)
         setAudioUrl(url)
-        setAudioMimeType(finalMimeType)
+        setAudioMimeType(finalMimeType === 'audio/mp4' ? 'audio/m4a' : finalMimeType)
         stream.getTracks().forEach(track => track.stop())
         console.log('✅ Recording saved successfully')
         toast.success('تم حفظ التسجيل! 🎉')

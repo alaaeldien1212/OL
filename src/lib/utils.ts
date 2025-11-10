@@ -11,12 +11,15 @@ export function delay(ms: number) {
 
 export const normalizeMimeType = (mimeType?: string): string => {
   if (!mimeType) return 'audio/webm'
-  return mimeType.split(';')[0].trim().toLowerCase()
+  const base = mimeType.split(';')[0].trim().toLowerCase()
+  if (base === 'audio/x-m4a') return 'audio/m4a'
+  return base
 }
 
 export const getAudioExtensionFromMime = (mimeType?: string): string => {
   const normalized = normalizeMimeType(mimeType)
   switch (normalized) {
+    case 'audio/m4a':
     case 'audio/mp4':
       return 'm4a'
     case 'audio/mpeg':
