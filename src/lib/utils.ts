@@ -21,7 +21,8 @@ export const getAudioExtensionFromMime = (mimeType?: string): string => {
   switch (normalized) {
     case 'audio/m4a':
     case 'audio/mp4':
-      return 'm4a'
+    case 'video/mp4':
+      return 'mp4'
     case 'audio/mpeg':
       return 'mp3'
     case 'audio/aac':
@@ -38,7 +39,7 @@ export const inferAudioMimeFromUrl = (url?: string): string => {
   if (!url) return 'audio/webm'
   const cleanUrl = url.split('?')[0]?.toLowerCase() || ''
   if (cleanUrl.endsWith('.mp3')) return 'audio/mpeg'
-  if (cleanUrl.endsWith('.m4a') || cleanUrl.endsWith('.mp4')) return 'audio/mp4'
+  if (cleanUrl.endsWith('.m4a') || cleanUrl.endsWith('.mp4')) return 'video/mp4'
   if (cleanUrl.endsWith('.aac')) return 'audio/aac'
   if (cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.opus')) return 'audio/ogg'
   return 'audio/webm'
