@@ -24,6 +24,20 @@ interface LeaderboardEntry {
   total_score?: number
 }
 
+type MedalVariant = 'gold' | 'silver' | 'bronze' | 'default'
+
+const titleVariantMap: Record<string, MedalVariant> = {
+  'قارئ أسطوري': 'gold',
+  'سفيرة القراء': 'gold',
+  'قارئ محترف': 'silver',
+  'قارئ متميز': 'bronze',
+}
+
+const getMedalVariant = (title?: string): MedalVariant => {
+  if (!title) return 'default'
+  return titleVariantMap[title] ?? 'default'
+}
+
 export default function LeaderboardPage() {
   const router = useRouter()
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
@@ -71,22 +85,34 @@ export default function LeaderboardPage() {
     setSelectedStudent(null)
   }
 
-  const getRankBadgeClass = (entry: LeaderboardEntry, index: number) => {
-    const titleRank = entry.rank
-    switch (titleRank) {
-      case 6: // Legendary
-      case 5: // Ambassador
-        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
-      case 4: // Professional
-        return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
-      case 3: // Distinguished
-        return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
+  const getRankIcon = (index: number, title?: string) => {
+    const variant = getMedalVariant(title)
+    if (variant === 'gold') return <Crown className="w-8 h-8 text-yellow-400" />
+    if (variant === 'silver') return <Medal className="w-8 h-8 text-gray-300" />
+    if (variant === 'bronze') return <Medal className="w-8 h-8 text-amber-600" />
+
+    switch (index) {
+      case 0:
+        return <Crown className="w-8 h-8 text-yellow-400" />
+      case 1:
+        return <Medal className="w-8 h-8 text-gray-300" />
+      case 2:
+        return <Medal className="w-8 h-8 text-amber-600" />
       default:
-        if (index === 0) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
-        if (index === 1) return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
-        if (index === 2) return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
-        return 'bg-slate-700 text-gray-300'
+        return <Star className="w-6 h-6 text-blue-400" />
     }
+  }
+
+  const getRankBadgeClass = (entry: LeaderboardEntry, index: number) => {
+    const variant = getMedalVariant(entry.current_title)
+    if (variant === 'gold') return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
+    if (variant === 'silver') return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
+    if (variant === 'bronze') return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
+
+    if (index === 0) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
+    if (index === 1) return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
+    if (index === 2) return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
+    return 'bg-slate-700 text-gray-300'
   }
 
   return (
@@ -301,13 +327,11 @@ export default function LeaderboardPage() {
                     {/* Rank and Icon */}
                     <div className="flex items-center justify-between mb-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${getRankBadge(
-                          entry.rank
-                        )}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${getRankBadgeClass(entry, index)}`}
                       >
                         {entry.rank}
                       </div>
-                      <div className="flex-shrink-0">{getRankIcon(entry.rank)}</div>
+                      <div className="flex-shrink-0">{getRankIcon(index, entry.current_title)}</div>
                     </div>
 
                     {/* Name and Achievement Badge */}
@@ -422,7 +446,7 @@ export default function LeaderboardPage() {
               {/* Modal Header */}
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  {getRankIcon(selectedStudent.rank)}
+                  {getRankIcon(Math.max(selectedStudent.rank - 1, 0), selectedStudent.current_title)}
                   <div>
                     <h2 className="text-2xl font-bold text-white">{selectedStudent.name}</h2>
                     <p className="text-gray-400">المركز #{selectedStudent.rank}</p>

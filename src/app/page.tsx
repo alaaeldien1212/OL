@@ -130,62 +130,6 @@ const loadLeaderboard = async () => {
     }
   }
 
-type MedalVariant = 'gold' | 'silver' | 'bronze' | 'default'
-
-const getMedalVariantForTitle = (rank?: number): MedalVariant => {
-  if (!rank) return 'default'
-  if (rank >= 5) return 'gold'
-  if (rank === 4) return 'silver'
-  if (rank === 3) return 'bronze'
-  return 'default'
-}
-
-const getRankIcon = (index: number, titleRank?: number) => {
-  const variant = getMedalVariantForTitle(titleRank)
-  switch (variant) {
-    case 'gold':
-      return <Crown className="w-6 h-6 text-yellow-400" />
-    case 'silver':
-      return <Medal className="w-6 h-6 text-gray-300" />
-    case 'bronze':
-      return <Medal className="w-6 h-6 text-amber-600" />
-    default:
-      return <Medal className="w-6 h-6 text-gray-400" />
-  }
-}
-
-const getRankColor = (index: number, titleRank?: number) => {
-  const variant = getMedalVariantForTitle(titleRank)
-  switch (variant) {
-    case 'gold':
-      return 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-    case 'silver':
-      return 'bg-gradient-to-r from-gray-300 to-gray-400'
-    case 'bronze':
-      return 'bg-gradient-to-r from-amber-600 to-amber-700'
-    default:
-      return index < 3 ? 'bg-slate-700' : 'bg-slate-800'
-  }
-}
-
-const getRankIconByIndex = (index: number) => {
-  switch (index) {
-      case 0: return <Crown className="w-6 h-6 text-yellow-400" />
-      case 1: return <Medal className="w-6 h-6 text-gray-300" />
-      case 2: return <Medal className="w-6 h-6 text-amber-600" />
-      default: return <span className="w-6 h-6 flex items-center justify-center text-gray-400 font-bold">{index + 1}</span>
-    }
-  }
-
-const getRankColorByIndex = (index: number) => {
-  switch (index) {
-    case 0: return 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-    case 1: return 'bg-gradient-to-r from-gray-300 to-gray-400'
-    case 2: return 'bg-gradient-to-r from-amber-600 to-amber-700'
-    default: return 'bg-slate-700'
-  }
-}
-
   return (
     <AnimatedBackground>
       <div className="w-full min-h-screen flex items-center justify-center px-2 sm:px-3 md:px-4 py-4 overflow-x-hidden" dir="rtl">
