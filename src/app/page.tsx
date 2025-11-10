@@ -64,22 +64,22 @@ export default function HomePage() {
     router.replace(destination)
   }, [hydrated, isAuthenticated, userRole, router])
 
-  const loadLeaderboard = async () => {
-    try {
-      setIsLoadingLeaderboard(true)
-      const data = await leaderboardService.getLeaderboard()
-      console.log('Loaded leaderboard data:', data)
-      const top5 = (data || []).slice(0, 5)
-      
-      console.log('Top 5 students:', top5)
-      setLeaderboard(top5)
-    } catch (error) {
-      console.error('Error loading leaderboard:', error)
-      setLeaderboard([]) // Set empty array on error
-    } finally {
-      setIsLoadingLeaderboard(false)
-    }
+const loadLeaderboard = async () => {
+  try {
+    setIsLoadingLeaderboard(true)
+    const data = await leaderboardService.getLeaderboard()
+    console.log('Loaded leaderboard data:', data)
+    const top5 = (data || []).slice(0, 5)
+    
+    console.log('Top 5 students:', top5)
+    setLeaderboard(top5)
+  } catch (error) {
+    console.error('Error loading leaderboard:', error)
+    setLeaderboard([]) // Set empty array on error
+  } finally {
+    setIsLoadingLeaderboard(false)
   }
+}
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,8 +130,46 @@ export default function HomePage() {
     }
   }
 
-  const getRankIcon = (index: number) => {
-    switch (index) {
+type MedalVariant = 'gold' | 'silver' | 'bronze' | 'default'
+
+const getMedalVariantForTitle = (rank?: number): MedalVariant => {
+  if (!rank) return 'default'
+  if (rank >= 5) return 'gold'
+  if (rank === 4) return 'silver'
+  if (rank === 3) return 'bronze'
+  return 'default'
+}
+
+const getRankIcon = (index: number, titleRank?: number) => {
+  const variant = getMedalVariantForTitle(titleRank)
+  switch (variant) {
+    case 'gold':
+      return <Crown className="w-6 h-6 text-yellow-400" />
+    case 'silver':
+      return <Medal className="w-6 h-6 text-gray-300" />
+    case 'bronze':
+      return <Medal className="w-6 h-6 text-amber-600" />
+    default:
+      return <Medal className="w-6 h-6 text-gray-400" />
+  }
+}
+
+const getRankColor = (index: number, titleRank?: number) => {
+  const variant = getMedalVariantForTitle(titleRank)
+  switch (variant) {
+    case 'gold':
+      return 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+    case 'silver':
+      return 'bg-gradient-to-r from-gray-300 to-gray-400'
+    case 'bronze':
+      return 'bg-gradient-to-r from-amber-600 to-amber-700'
+    default:
+      return index < 3 ? 'bg-slate-700' : 'bg-slate-800'
+  }
+}
+
+const getRankIconByIndex = (index: number) => {
+  switch (index) {
       case 0: return <Crown className="w-6 h-6 text-yellow-400" />
       case 1: return <Medal className="w-6 h-6 text-gray-300" />
       case 2: return <Medal className="w-6 h-6 text-amber-600" />
@@ -139,14 +177,14 @@ export default function HomePage() {
     }
   }
 
-  const getRankColor = (index: number) => {
-    switch (index) {
-      case 0: return 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-      case 1: return 'bg-gradient-to-r from-gray-300 to-gray-400'
-      case 2: return 'bg-gradient-to-r from-amber-600 to-amber-700'
-      default: return 'bg-slate-700'
-    }
+const getRankColorByIndex = (index: number) => {
+  switch (index) {
+    case 0: return 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+    case 1: return 'bg-gradient-to-r from-gray-300 to-gray-400'
+    case 2: return 'bg-gradient-to-r from-amber-600 to-amber-700'
+    default: return 'bg-slate-700'
   }
+}
 
   return (
     <AnimatedBackground>

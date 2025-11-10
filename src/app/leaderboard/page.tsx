@@ -71,28 +71,20 @@ export default function LeaderboardPage() {
     setSelectedStudent(null)
   }
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="w-8 h-8 text-yellow-400" />
-      case 2:
-        return <Medal className="w-8 h-8 text-gray-300" />
-      case 3:
-        return <Medal className="w-8 h-8 text-amber-600" />
-      default:
-        return <Star className="w-6 h-6 text-blue-400" />
-    }
-  }
-
-  const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
+  const getRankBadgeClass = (entry: LeaderboardEntry, index: number) => {
+    const titleRank = entry.rank
+    switch (titleRank) {
+      case 6: // Legendary
+      case 5: // Ambassador
         return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
-      case 2:
+      case 4: // Professional
         return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
-      case 3:
+      case 3: // Distinguished
         return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
       default:
+        if (index === 0) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
+        if (index === 1) return 'bg-gradient-to-r from-gray-300 to-gray-400 text-slate-900'
+        if (index === 2) return 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
         return 'bg-slate-700 text-gray-300'
     }
   }
