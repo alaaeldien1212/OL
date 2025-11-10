@@ -45,11 +45,46 @@ export default function StudentDashboard() {
       setStories(fetchedStories || [])
       console.log('Stories set to state:', fetchedStories?.length || 0)
       
-      // Update stats based on submission status
-      const submittedCount = fetchedStories?.filter((story: any) => story.submission_status !== 'not_submitted').length || 0
+      // Load aggregated statistics
+      let storiesReadCount = 0
+      let formsSubmittedCount = 0
+
+      try {
+        const { data: statsRow, error: statsError } = await supabase
+          .from('student_statistics')
+          .select('stories_easy, stories_medium, stories_hard, total_submissions')
+          .eq('student_id', studentData.id)
+          .single()
+
+        if (statsError) {
+          console.warn('Unable to load student statistics, falling back to derived counts:', statsError)
+        }
+
+        if (statsRow) {
+          storiesReadCount =
+            (statsRow.stories_easy ?? 0) +
+            (statsRow.stories_medium ?? 0) +
+            (statsRow.stories_hard ?? 0)
+          formsSubmittedCount = statsRow.total_submissions ?? 0
+        }
+      } catch (statsFetchError) {
+        console.warn('Error fetching student statistics:', statsFetchError)
+      }
+
+      if (storiesReadCount === 0) {
+        storiesReadCount =
+          fetchedStories?.filter((story: any) => story.submission_status !== 'not_submitted').length || 0
+      }
+
+      if (formsSubmittedCount === 0) {
+        formsSubmittedCount =
+          fetchedStories?.filter((story: any) => story.submission_status !== 'not_submitted').length || 0
+      }
+
       setStats(prev => ({
         ...prev,
-        formsSubmitted: submittedCount
+        storiesRead: storiesReadCount,
+        formsSubmitted: formsSubmittedCount
       }))
       
     } catch (error) {
