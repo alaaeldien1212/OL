@@ -438,6 +438,34 @@ export const leaderboardService = {
     return processedData
   },
 
+  async getTeacherLeaderboard(teacherAccessCode: string) {
+    console.log('Loading teacher leaderboard data...')
+    const { data, error } = await supabase.rpc('teacher_get_leaderboard', {
+      teacher_access_code: teacherAccessCode
+    })
+
+    if (error) {
+      console.error('Error loading teacher leaderboard:', error)
+      throw error
+    }
+
+    const processedData = (data || []).map((entry: any) => ({
+      student_id: entry.student_id,
+      name: entry.student_name,
+      stories_read: entry.stories_read,
+      forms_submitted: entry.forms_submitted,
+      combined_score: entry.combined_score,
+      rank: entry.rank,
+      current_title: entry.current_title,
+      grade: entry.grade,
+      avg_grade: entry.avg_grade,
+      graded_submissions: entry.graded_submissions,
+      total_score: entry.total_score,
+    }))
+
+    return processedData
+  },
+
   async refreshLeaderboardCache() {
     const { error } = await supabase.rpc('refresh_leaderboard_cache')
     if (error) throw error
