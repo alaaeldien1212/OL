@@ -7,6 +7,7 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { leaderboardService } from '@/lib/supabase'
+import { useAppStore } from '@/lib/store'
 import toast, { Toaster } from 'react-hot-toast'
 import { Trophy, Medal, Crown, Star, TrendingUp, Home, Eye, X, BookOpen, FileText, Award, Calendar } from 'lucide-react'
 
@@ -40,14 +41,16 @@ const getMedalVariant = (title?: string): MedalVariant => {
 
 export default function LeaderboardPage() {
   const router = useRouter()
+  const { user, userRole, hydrated } = useAppStore()
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedStudent, setSelectedStudent] = useState<LeaderboardEntry | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
+    if (!hydrated) return
     loadLeaderboard()
-  }, [])
+  }, [hydrated, userRole])
 
   // Add focus listener to refresh leaderboard when returning to the page
   useEffect(() => {
@@ -65,7 +68,18 @@ export default function LeaderboardPage() {
   const loadLeaderboard = async () => {
     try {
       setIsLoading(true)
-      const data = await leaderboardService.getLeaderboard()
+      let data
+      if (userRole === 'teacher') {
+        const teacherAccessCode = (user as any)?.access_code
+        if (!teacherAccessCode) {
+          toast.error('لا يمكن تحديد صف المعلمة')
+          setLeaderboard([])
+          return
+        }
+        data = await leaderboardService.getTeacherLeaderboard(teacherAccessCode)
+      } else {
+        data = await leaderboardService.getLeaderboard()
+      }
       setLeaderboard(data || [])
     } catch (error) {
       console.error('Error loading leaderboard:', error)
