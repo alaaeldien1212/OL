@@ -24,6 +24,8 @@ interface LeaderboardEntry {
   graded_submissions?: number
 }
 
+const ALLOWED_GRADES = new Set([3, 4, 6])
+
 export default function HomePage() {
   const router = useRouter()
   const { setUser, setError, setLoading, isAuthenticated, userRole, hydrated } = useAppStore()
@@ -69,9 +71,13 @@ const loadLeaderboard = async () => {
     setIsLoadingLeaderboard(true)
     const data = await leaderboardService.getLeaderboard()
     console.log('Loaded leaderboard data:', data)
-    const top5 = (data || []).slice(0, 5)
+    const filteredLeaderboard = (data || []).filter((entry) => {
+      const gradeNumber = Number(entry.grade)
+      return !Number.isNaN(gradeNumber) && ALLOWED_GRADES.has(gradeNumber)
+    })
+    const top5 = filteredLeaderboard.slice(0, 5)
     
-    console.log('Top 5 students:', top5)
+    console.log('Filtered top students (grades 3, 4, 6):', top5)
     setLeaderboard(top5)
   } catch (error) {
     console.error('Error loading leaderboard:', error)
@@ -179,7 +185,7 @@ const loadLeaderboard = async () => {
             <Card className="p-2 sm:p-2.5 md:p-3 overflow-hidden">
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
                 <Trophy className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
-                <h2 className="text-lg md:text-xl font-bold text-white">جدول الترتيب</h2>
+                <h2 className="text-lg md:text-xl font-bold text-white">جدول الترتيب (الصفوف 3، 4، 6)</h2>
               </div>
               
               {isLoadingLeaderboard ? (
@@ -190,7 +196,7 @@ const loadLeaderboard = async () => {
               ) : leaderboard.length === 0 ? (
                 <div className="text-center py-2">
                   <Users className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                  <p className="text-gray-300 text-sm">لا يوجد طلاب بعد</p>
+                  <p className="text-gray-300 text-sm">لا يوجد طلاب في هذه الصفوف بعد</p>
                   <p className="text-gray-400 text-xs">كن أول من ينضم إلى المكتبة!</p>
                 </div>
               ) : (
