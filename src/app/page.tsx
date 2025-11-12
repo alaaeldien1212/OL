@@ -73,7 +73,12 @@ const loadLeaderboard = async () => {
     console.log('Loaded leaderboard data:', data)
     const filteredLeaderboard = (data || []).filter((entry) => {
       const gradeNumber = Number(entry.grade)
-      return !Number.isNaN(gradeNumber) && ALLOWED_GRADES.has(gradeNumber)
+      const gradedCount = Number(entry.graded_submissions ?? 0)
+      return (
+        !Number.isNaN(gradeNumber) &&
+        ALLOWED_GRADES.has(gradeNumber) &&
+        gradedCount > 0
+      )
     })
     const top5 = filteredLeaderboard.slice(0, 5)
     
@@ -196,7 +201,7 @@ const loadLeaderboard = async () => {
               ) : leaderboard.length === 0 ? (
                 <div className="text-center py-2">
                   <Users className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                  <p className="text-gray-300 text-sm">لا يوجد طلاب في هذه الصفوف بعد</p>
+                  <p className="text-gray-300 text-sm">لا يوجد طلاب مقيمون في هذه الصفوف بعد</p>
                   <p className="text-gray-400 text-xs">كن أول من ينضم إلى المكتبة!</p>
                 </div>
               ) : (
