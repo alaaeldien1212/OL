@@ -69,9 +69,9 @@ export default function HomePage() {
 const loadLeaderboard = async () => {
   try {
     setIsLoadingLeaderboard(true)
-    const data = await leaderboardService.getLeaderboard()
+    const data = (await leaderboardService.getLeaderboard()) as LeaderboardEntry[]
     console.log('Loaded leaderboard data:', data)
-    const filteredLeaderboard = (data || []).filter((entry) => {
+    const filteredLeaderboard = (data || []).filter((entry: LeaderboardEntry) => {
       const gradeNumber = Number(entry.grade)
       const gradedCount = Number(entry.graded_submissions ?? 0)
       return (
