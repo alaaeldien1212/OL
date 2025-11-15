@@ -69,6 +69,7 @@ export default function LeaderboardPage() {
     try {
       setIsLoading(true)
       let data
+      // Teachers should ONLY see their class leaderboard, not global
       if (userRole === 'teacher') {
         const teacherAccessCode = (user as any)?.access_code
         if (!teacherAccessCode) {
@@ -76,9 +77,17 @@ export default function LeaderboardPage() {
           setLeaderboard([])
           return
         }
+        // Get leaderboard for teacher's assigned class only
         data = await leaderboardService.getTeacherLeaderboard(teacherAccessCode)
-      } else {
+        console.log('Teacher class leaderboard loaded:', data?.length, 'students')
+      } else if (userRole === 'admin') {
+        // Admins can see global leaderboard
         data = await leaderboardService.getLeaderboard()
+        console.log('Global leaderboard loaded:', data?.length, 'students')
+      } else {
+        // Students and others should not access this page
+        router.push('/')
+        return
       }
       setLeaderboard(data || [])
     } catch (error) {
@@ -145,7 +154,13 @@ export default function LeaderboardPage() {
                 <Trophy className="w-10 h-10 text-yellow-400" />
                 جدول الترتيب
               </h1>
-              <p className="text-gray-300 text-lg font-semibold">أفضل القراء المتميزين</p>
+              <p className="text-gray-300 text-lg font-semibold">
+                {userRole === 'teacher' && leaderboard.length > 0 
+                  ? `الصف ${leaderboard[0]?.grade} - أفضل القراء المتميزين`
+                  : userRole === 'teacher'
+                  ? 'أفضل القراء المتميزين في صفك'
+                  : 'أفضل القراء المتميزين'}
+              </p>
             </div>
             <Button
               onClick={() => router.push('/')}

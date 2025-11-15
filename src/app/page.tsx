@@ -24,7 +24,8 @@ interface LeaderboardEntry {
   graded_submissions?: number
 }
 
-const ALLOWED_GRADES = new Set([3, 4, 6])
+// Allow all grades from 1 to 12
+const ALLOWED_GRADES = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 
 export default function HomePage() {
   const router = useRouter()
@@ -82,7 +83,7 @@ const loadLeaderboard = async () => {
     })
     const top5 = filteredLeaderboard.slice(0, 5)
     
-    console.log('Filtered top students (grades 3, 4, 6):', top5)
+    console.log('Filtered top students:', top5)
     setLeaderboard(top5)
   } catch (error) {
     console.error('Error loading leaderboard:', error)
