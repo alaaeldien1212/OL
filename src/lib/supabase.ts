@@ -175,10 +175,10 @@ export const storiesService = {
       
       const { data, error } = await supabase.rpc('teacher_update_story', {
         teacher_access_code: teacherAccessCode,
-        story_uuid: storyId,
-        title_arabic: updates.title_arabic,
-        content_arabic: updates.content_arabic,
-        difficulty: updates.difficulty
+        story_id_param: storyId,
+        story_title: updates.title_arabic,
+        story_content: updates.content_arabic,
+        story_difficulty: updates.difficulty
       })
 
       if (error) throw error
@@ -195,7 +195,7 @@ export const storiesService = {
       
       const { data, error } = await supabase.rpc('teacher_delete_story', {
         teacher_access_code: teacherAccessCode,
-        story_uuid: storyId
+        story_id_param: storyId
       })
 
       if (error) throw error
