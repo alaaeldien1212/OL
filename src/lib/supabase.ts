@@ -331,7 +331,7 @@ export const gradingService = {
     // Use the new RPC function instead of direct table update
     const params: any = {
       teacher_access_code: (await this.getCurrentTeacherAccessCode()),
-      submission_uuid: submissionId,
+      submission_id_param: submissionId,
       grade_value: grade,
       feedback_text: feedback
     }
