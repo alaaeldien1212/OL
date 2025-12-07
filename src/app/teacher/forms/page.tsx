@@ -473,7 +473,7 @@ function EditFormTemplate({ form, onSuccess }: { form: FormTemplate; onSuccess: 
       })
 
       const { error } = await supabase.rpc('teacher_update_form', {
-        form_uuid: form.id,
+        form_id_param: form.id,
         form_title: title,
         form_description: description,
         form_questions: formattedQuestions,
