@@ -137,7 +137,7 @@ export default function TeacherFormsPage() {
       }
 
       const { error } = await supabase.rpc('teacher_delete_form', {
-        form_uuid: formId,
+        form_id_param: formId,
         teacher_access_code: teacherAccessCode
       })
 
