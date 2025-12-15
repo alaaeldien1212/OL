@@ -18,7 +18,7 @@ export default function StudentDashboard() {
   const { user, isAuthenticated, hydrated } = useAppStore()
   const [stories, setStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [stats, setStats] = useState({ storiesRead: 0, formsSubmitted: 0, titleName: 'قارئ مبتدئ', titleIcon: '📖' })
+  const [stats, setStats] = useState({ storiesRead: 0, formsSubmitted: 0, titleName: 'قارئ مبتدئ' })
 
   const loadStories = async () => {
     try {
@@ -81,72 +81,11 @@ export default function StudentDashboard() {
           fetchedStories?.filter((story: any) => story.submission_status !== 'not_submitted').length || 0
       }
 
-      // Fetch student's current title
-      let titleName = 'قارئ مبتدئ'
-      let titleIcon = '📖'
-      
-      try {
-        // First try to get current title from student record
-        const { data: studentRecord, error: studentRecordError } = await supabase
-          .from('students')
-          .select(`
-            stories_read,
-            forms_submitted,
-            current_title_id,
-            achievement_titles:current_title_id (
-              name_arabic,
-              icon_emoji
-            )
-          `)
-          .eq('id', studentData.id)
-          .single()
-        
-        if (!studentRecordError && studentRecord) {
-          // Update stories/forms counts from student record if available
-          if (studentRecord.stories_read > 0) {
-            storiesReadCount = studentRecord.stories_read
-          }
-          if (studentRecord.forms_submitted > 0) {
-            formsSubmittedCount = studentRecord.forms_submitted
-          }
-          
-          // Get current title
-          const achievementData = studentRecord.achievement_titles as any
-          if (achievementData) {
-            titleName = achievementData.name_arabic || titleName
-            titleIcon = achievementData.icon_emoji || titleIcon
-          }
-        }
-        
-        // If no current_title_id, calculate based on stats
-        if (titleName === 'قارئ مبتدئ') {
-          const { data: allTitles, error: titlesError } = await supabase
-            .from('achievement_titles')
-            .select('name_arabic, icon_emoji, min_stories_read, min_forms_submitted')
-            .order('rank', { ascending: false })
-          
-          if (!titlesError && allTitles) {
-            // Find the highest rank title the student qualifies for
-            for (const title of allTitles) {
-              if (storiesReadCount >= (title.min_stories_read || 0) && 
-                  formsSubmittedCount >= (title.min_forms_submitted || 0)) {
-                titleName = title.name_arabic
-                titleIcon = title.icon_emoji || '📖'
-                break
-              }
-            }
-          }
-        }
-      } catch (titleError) {
-        console.warn('Error fetching title:', titleError)
-      }
-
-      setStats({
+      setStats(prev => ({
+        ...prev,
         storiesRead: storiesReadCount,
-        formsSubmitted: formsSubmittedCount,
-        titleName,
-        titleIcon
-      })
+        formsSubmitted: formsSubmittedCount
+      }))
       
     } catch (error) {
       console.error('Failed to load stories:', error)
@@ -294,7 +233,7 @@ export default function StudentDashboard() {
               className="cursor-pointer"
             >
               <Card className="text-center hover:shadow-hover transition-all" elevation="sm">
-                <div className="text-5xl mb-2">{stats.titleIcon}</div>
+                <div className="text-5xl mb-2">👑</div>
                 <p className="text-gray-200 text-sm mb-1">إنجازك الحالي</p>
                 <p className="text-lg font-bold text-secondary">{stats.titleName}</p>
               </Card>

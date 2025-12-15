@@ -9,7 +9,7 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
-import { analyticsService } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   BarChart3, 
@@ -81,70 +81,106 @@ export default function AdminAnalytics() {
     try {
       setIsLoading(true)
       
-      // Get admin access code from user
-      const adminAccessCode = (user as any)?.access_code
-      if (!adminAccessCode) {
-        throw new Error('Admin access code not found')
-      }
-      
-      // Use RPC function to get analytics (bypasses RLS)
-      const data = await analyticsService.getAdminAnalytics(adminAccessCode)
-      
-      if (!data) {
-        throw new Error('No analytics data returned')
-      }
+      // Get comprehensive system data
+      const [
+        studentsResult,
+        teachersResult,
+        adminsResult,
+        storiesResult,
+        formsResult,
+        submissionsResult,
+        activityResult
+      ] = await Promise.all([
+        // User counts
+        supabase.from('students').select('id, last_login_at'),
+        supabase.from('teachers').select('id, last_login_at'),
+        supabase.from('admins').select('id, last_login_at'),
+        
+        // Content stats
+        supabase.from('stories').select('id, grade_level'),
+        supabase.from('form_templates').select('id'),
+        supabase.from('student_submissions').select('id, grade, submitted_at'),
+        
+        // Activity logs
+        supabase
+          .from('activity_logs')
+          .select('action_type, description_arabic, created_at, user_type')
+          .order('created_at', { ascending: false })
+          .limit(20)
+      ])
 
-      // Calculate active users from login data (logged in within last 7 days)
+      // Process the data
+      const students = studentsResult.data || []
+      const teachers = teachersResult.data || []
+      const admins = adminsResult.data || []
+      const stories = storiesResult.data || []
+      const forms = formsResult.data || []
+      const submissions = submissionsResult.data || []
+      const activities = activityResult.data || []
+
+      // Calculate active users (logged in within last 7 days)
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      const studentsLoginData = data.students_login_data || []
-      const teachersLoginData = data.teachers_login_data || []
-      const adminsLoginData = data.admins_login_data || []
-      
-      const activeStudents = studentsLoginData.filter((s: any) => 
-        s.last_login_at && new Date(s.last_login_at) > weekAgo
-      ).length
-      const activeTeachers = teachersLoginData.filter((t: any) => 
-        t.last_login_at && new Date(t.last_login_at) > weekAgo
-      ).length
-      const activeAdmins = adminsLoginData.filter((a: any) => 
-        a.last_login_at && new Date(a.last_login_at) > weekAgo
-      ).length
+      const activeStudents = students.filter(s => new Date(s.last_login_at || 0) > weekAgo).length
+      const activeTeachers = teachers.filter(t => new Date(t.last_login_at || 0) > weekAgo).length
+      const activeAdmins = admins.filter(a => new Date(a.last_login_at || 0) > weekAgo).length
 
-      const totalUsers = data.total_students + data.total_teachers + data.total_admins
+      // Calculate grades and performance
+      const gradedSubmissions = submissions.filter(s => s.grade !== null)
+      const averageGrade = gradedSubmissions.length > 0 
+        ? gradedSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) / gradedSubmissions.length
+        : 0
+
+      // Calculate completion rate
+      const completionRate = submissions.length > 0 
+        ? (gradedSubmissions.length / submissions.length) * 100
+        : 0
+
+      // Calculate engagement rate
+      const totalUsers = students.length + teachers.length + admins.length
       const activeUsers = activeStudents + activeTeachers + activeAdmins
       const engagementRate = totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0
 
+      // Find top performing grade
+      const gradeStats = stories.reduce((acc: any, story) => {
+        const grade = story.grade_level
+        acc[grade] = (acc[grade] || 0) + 1
+        return acc
+      }, {})
+      const topPerformingGrade = Object.keys(gradeStats).reduce((a, b) => 
+        gradeStats[a] > gradeStats[b] ? a : b, '3'
+      )
+
       // Process recent activity
-      const recentActivity = (data.recent_activity || []).map((activity: any) => ({
-        type: activity.type || 'activity',
-        description: activity.description || '',
-        timestamp: activity.timestamp,
-        user_type: activity.user_type || ''
+      const processedActivities = activities.map(activity => ({
+        type: activity.action_type,
+        description: activity.description_arabic,
+        timestamp: activity.created_at,
+        user_type: activity.user_type
       }))
 
       setAnalytics({
         totalUsers: {
-          students: data.total_students || 0,
-          teachers: data.total_teachers || 0,
-          admins: data.total_admins || 0
+          students: students.length,
+          teachers: teachers.length,
+          admins: admins.length
         },
         contentStats: {
-          totalStories: data.total_stories || 0,
-          totalForms: data.total_forms || 0,
-          totalSubmissions: data.total_submissions || 0,
-          gradedSubmissions: data.graded_submissions || 0
+          totalStories: stories.length,
+          totalForms: forms.length,
+          totalSubmissions: submissions.length,
+          gradedSubmissions: gradedSubmissions.length
         },
         activityStats: {
-          dailyLogins: data.daily_activity || 0,
+          dailyLogins: activeUsers,
           weeklyLogins: activeUsers,
           monthlyLogins: activeUsers,
-          recentActivity: recentActivity
+          recentActivity: processedActivities
         },
         performanceStats: {
-          averageGrade: Math.round(data.average_grade || 0),
-          completionRate: Math.round(data.completion_rate || 0),
+          averageGrade: Math.round(averageGrade),
+          completionRate: Math.round(completionRate),
           engagementRate: Math.round(engagementRate),
-          topPerformingGrade: data.top_performing_grade || 3
+          topPerformingGrade: parseInt(topPerformingGrade)
         },
         systemHealth: {
           uptime: '99.9%',

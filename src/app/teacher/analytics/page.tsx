@@ -9,7 +9,7 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
-import { analyticsService } from '@/lib/supabase'
+import { analyticsService, supabase } from '@/lib/supabase'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   BarChart3, 
@@ -63,25 +63,20 @@ export default function TeacherAnalytics() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (userRole !== 'teacher') {
-      return
-    }
     loadAnalytics()
-  }, [userRole, user])
+  }, [])
 
   // Add focus listener to refresh analytics when returning to the page
   useEffect(() => {
     const handleFocus = () => {
-      if (userRole === 'teacher' && user) {
-        loadAnalytics()
-      }
+      loadAnalytics()
     }
 
     if (typeof window !== 'undefined') {
       window.addEventListener('focus', handleFocus)
       return () => window.removeEventListener('focus', handleFocus)
     }
-  }, [userRole, user])
+  }, [])
 
   const loadAnalytics = async () => {
     try {
@@ -102,33 +97,24 @@ export default function TeacherAnalytics() {
       console.log('Loaded analytics:', analyticsData)
 
       if (!analyticsData) {
-        console.error('No analytics data returned from RPC')
         toast.error('لا توجد بيانات متاحة')
         return
       }
 
-      console.log('Raw analytics data:', analyticsData)
+      // Process top students data
+      const processedTopStudents = analyticsData.top_students.map((student: any) => ({
+        name: student.name,
+        stories_read: student.stories_read,
+        forms_submitted: student.forms_submitted,
+        average_grade: student.average_grade
+      }))
 
-      // Process top students data (handle null/undefined)
-      const topStudentsArray = analyticsData.top_students || []
-      const processedTopStudents = Array.isArray(topStudentsArray) 
-        ? topStudentsArray.map((student: any) => ({
-            name: student.name || '',
-            stories_read: student.stories_read || 0,
-            forms_submitted: student.forms_submitted || 0,
-            average_grade: student.average_grade || 0
-          }))
-        : []
-
-      // Process recent activity (handle null/undefined)
-      const recentActivityArray = analyticsData.recent_activity || []
-      const processedActivities = Array.isArray(recentActivityArray)
-        ? recentActivityArray.map((activity: any) => ({
-            type: activity.type || '',
-            description: activity.description || '',
-            timestamp: activity.timestamp || ''
-          }))
-        : []
+      // Process recent activity
+      const processedActivities = analyticsData.recent_activity.map((activity: any) => ({
+        type: activity.type,
+        description: activity.description,
+        timestamp: activity.timestamp
+      }))
 
       // Monthly progress (mock data for now)
       const monthlyProgress = [
@@ -150,13 +136,13 @@ export default function TeacherAnalytics() {
       ]
 
       setAnalytics({
-        totalStudents: analyticsData.total_students || 0,
-        activeStudents: analyticsData.active_students || 0,
-        totalStories: analyticsData.total_stories || 0,
-        totalForms: analyticsData.total_forms || 0,
-        totalSubmissions: analyticsData.total_submissions || 0,
-        gradedSubmissions: analyticsData.graded_submissions || 0,
-        averageGrade: Math.round(Number(analyticsData.average_grade) || 0),
+        totalStudents: analyticsData.total_students,
+        activeStudents: analyticsData.active_students,
+        totalStories: analyticsData.total_stories,
+        totalForms: analyticsData.total_forms,
+        totalSubmissions: analyticsData.total_submissions,
+        gradedSubmissions: analyticsData.graded_submissions,
+        averageGrade: Math.round(analyticsData.average_grade),
         topPerformingStudents: processedTopStudents,
         recentActivity: processedActivities,
         gradeDistribution,
