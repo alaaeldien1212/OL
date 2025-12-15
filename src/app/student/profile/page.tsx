@@ -300,11 +300,6 @@ export default function StudentProfile() {
                         {isEarned && (
                           <p className="text-xs text-green-600 mt-1">✓ مكتسب</p>
                         )}
-                        {!isEarned && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {achievement.min_stories_read} قصص - {achievement.min_forms_submitted} نماذج
-                          </p>
-                        )}
                       </Card>
                     </motion.div>
                   )
