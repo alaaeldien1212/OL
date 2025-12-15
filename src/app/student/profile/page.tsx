@@ -275,7 +275,13 @@ export default function StudentProfile() {
                 ))
               ) : (
                 allAchievements.map((achievement, i) => {
-                  const isEarned = earnedAchievements.includes(achievement.id)
+                  // Check if earned either from database OR from current stats
+                  const isEarnedFromDB = earnedAchievements.includes(achievement.id)
+                  const meetsRequirements = 
+                    stats.stories_read >= achievement.min_stories_read && 
+                    stats.forms_submitted >= achievement.min_forms_submitted
+                  const isEarned = isEarnedFromDB || meetsRequirements
+                  
                   return (
                     <motion.div
                       key={achievement.id}
