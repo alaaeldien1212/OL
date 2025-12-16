@@ -62,13 +62,13 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         <div className="text-center mb-4">
           <div className="text-6xl mb-3 inline-block">{getStatusIcon()}</div>
           {isNext && (
-            <div className="inline-block bg-secondary text-ink px-3 py-1 rounded-full text-xs font-bold mb-3">
+            <div className="inline-block bg-secondary text-white px-3 py-1 rounded-full text-xs font-bold mb-3">
               اقرأ الآن
             </div>
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-ink mb-2 line-clamp-2 text-right">
+        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 text-right">
           {story.story_title || story.title_arabic}
         </h3>
 
@@ -79,10 +79,10 @@ export const StoryCard: React.FC<StoryCardProps> = ({
           >
             {diffLabel}
           </div>
-          <span className="text-gray-600">الصف {story.story_grade_level || story.grade_level}</span>
+          <span className="text-gray-300">الصف {story.story_grade_level || story.grade_level}</span>
         </div>
 
-        <div className="text-gray-600 text-sm mb-4 line-clamp-2 text-right">
+        <div className="text-gray-300 text-sm mb-4 line-clamp-2 text-right">
           {(story.story_content || story.content_arabic || 'لا يوجد محتوى').substring(0, 80)}...
         </div>
 
