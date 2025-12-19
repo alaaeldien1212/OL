@@ -20,7 +20,8 @@ import {
   FileText,
   Save,
   Filter,
-  Search
+  Search,
+  Sparkles
 } from 'lucide-react'
 
 interface Submission {
@@ -49,6 +50,7 @@ export default function GradingPage() {
   const [feedback, setFeedback] = useState('')
   const [voiceGrade, setVoiceGrade] = useState('')
   const [isGrading, setIsGrading] = useState(false)
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false)
   const [filter, setFilter] = useState<'all' | 'graded' | 'ungraded'>('all')
 
   useEffect(() => {
@@ -157,6 +159,40 @@ export default function GradingPage() {
       toast.error('فشل تقييم الإجابة')
     } finally {
       setIsGrading(false)
+    }
+  }
+
+  const generateAIFeedback = async () => {
+    if (!selectedSubmission) return
+
+    try {
+      setIsGeneratingFeedback(true)
+      
+      const response = await fetch('/api/generate-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questions: selectedSubmission.questions,
+          answers: selectedSubmission.answers,
+          storyTitle: selectedSubmission.story_title,
+          studentName: selectedSubmission.student_name,
+          grade: grade ? parseInt(grade) : undefined,
+        }),
+      })
+
+      const data = await response.json()
+      
+      if (data.feedback) {
+        setFeedback(data.feedback)
+        toast.success('تم إنشاء التعليق بنجاح! ✨')
+      }
+    } catch (error) {
+      console.error('Error generating feedback:', error)
+      toast.error('فشل إنشاء التعليق')
+    } finally {
+      setIsGeneratingFeedback(false)
     }
   }
 
@@ -493,16 +529,35 @@ export default function GradingPage() {
 
                     {/* Feedback */}
                     <div>
-                      <label className="block text-gray-300 font-semibold mb-2 text-sm md:text-base">
-                        التعليق (اختياري)
-                      </label>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-gray-300 font-semibold text-sm md:text-base">
+                          التعليق (اختياري)
+                        </label>
+                        <button
+                          onClick={generateAIFeedback}
+                          disabled={isGeneratingFeedback || isGrading}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingFeedback ? (
+                            <>
+                              <span className="animate-spin">⏳</span>
+                              جاري الإنشاء...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4" />
+                              إنشاء بالذكاء الاصطناعي
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <textarea
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
                         rows={3}
-                        placeholder="اكتب تعليقك هنا..."
+                        placeholder="اكتب تعليقك هنا أو استخدم الذكاء الاصطناعي..."
                         className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-slate-900 text-white font-semibold resize-none text-sm md:text-base"
-                        disabled={isGrading}
+                        disabled={isGrading || isGeneratingFeedback}
                       />
                     </div>
 

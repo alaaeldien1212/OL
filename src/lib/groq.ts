@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk'
 
 const groq = new Groq({
-  apiKey: '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',
+  apiKey: process.env.GROQ_API_KEY,
 })
 
 interface GradingRequest {
