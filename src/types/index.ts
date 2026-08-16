@@ -67,6 +67,7 @@ export interface FormQuestion {
   type: QuestionType
   required: boolean
   options?: string[]
+  correct_answer?: string
 }
 
 export interface FormTemplate {

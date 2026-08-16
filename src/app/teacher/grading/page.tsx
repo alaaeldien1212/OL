@@ -10,20 +10,15 @@ import LoadingState from '@/components/LoadingState'
 import { useAppStore } from '@/lib/store'
 import { gradingService } from '@/lib/supabase'
 import { getTrustedStudentRecordingUrl, inferAudioMimeFromUrl } from '@/lib/utils'
+import { MISSING_ANSWER_KEY_MESSAGE } from '@/lib/answerKeyGrading'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   Star, 
   ArrowRight,
   CheckCircle,
   Clock,
-  User,
   BookOpen,
-  FileText,
-  Save,
-  Filter,
-  Search,
-  Sparkles,
-  Loader2
+  FileText
 } from 'lucide-react'
 
 interface Submission {
@@ -42,6 +37,7 @@ interface Submission {
   graded_at?: string
   audio_url?: string
   voice_grade?: number
+  needs_answer_key?: boolean
 }
 
 export default function GradingPage() {
@@ -50,11 +46,6 @@ export default function GradingPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [grade, setGrade] = useState('')
-  const [feedback, setFeedback] = useState('')
-  const [voiceGrade, setVoiceGrade] = useState('')
-  const [isGrading, setIsGrading] = useState(false)
-  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false)
   const [filter, setFilter] = useState<'all' | 'graded' | 'ungraded'>('all')
 
   useEffect(() => {
@@ -107,6 +98,7 @@ export default function GradingPage() {
         graded_at: sub.graded_at,
         audio_url: getTrustedStudentRecordingUrl(sub.audio_url),
         voice_grade: sub.voice_grade,
+        needs_answer_key: sub.needs_answer_key === true,
       }))
 
       setSubmissions(formattedSubmissions)
@@ -116,93 +108,6 @@ export default function GradingPage() {
       toast.error('فشل تحميل الإجابات')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleGradeSubmission = async () => {
-    if (!selectedSubmission) return
-
-    const gradeNum = parseInt(grade)
-    if (isNaN(gradeNum) || gradeNum < 0 || gradeNum > 100) {
-      toast.error('الرجاء إدخال درجة صحيحة (0-100)')
-      return
-    }
-
-    // Parse voice grade if provided
-    const voiceGradeNum = voiceGrade ? parseInt(voiceGrade) : undefined
-    if (voiceGrade && (isNaN(voiceGradeNum!) || voiceGradeNum! < 0 || voiceGradeNum! > 100)) {
-      toast.error('الرجاء إدخال درجة صوتية صحيحة (0-100)')
-      return
-    }
-
-    try {
-      setIsGrading(true)
-      console.log('Starting to grade submission:', selectedSubmission.id, 'with grade:', gradeNum, 'voice grade:', voiceGradeNum)
-
-      const result = await gradingService.gradeSubmission(selectedSubmission.id, gradeNum, feedback, voiceGradeNum)
-      console.log('Grading completed successfully:', result)
-
-      toast.success('تم تقييم الإجابة بنجاح! ')
-      
-      // Update local state
-      setSubmissions(submissions.map(sub => 
-        sub.id === selectedSubmission.id 
-          ? { ...sub, grade: gradeNum, voice_grade: voiceGradeNum, feedback: feedback.trim(), graded_at: new Date().toISOString() }
-          : sub
-      ))
-
-      setSelectedSubmission(null)
-      setGrade('')
-      setFeedback('')
-      setVoiceGrade('')
-      
-      // Refresh submissions to get updated data
-      setTimeout(() => {
-        loadSubmissions()
-      }, 1000)
-      
-    } catch (error) {
-      console.error('Error grading submission:', error)
-      toast.error('فشل تقييم الإجابة')
-    } finally {
-      setIsGrading(false)
-    }
-  }
-
-  const generateAIFeedback = async () => {
-    if (!selectedSubmission) return
-    if (!user || !('access_code' in user)) {
-      toast.error('تعذر التحقق من حساب المعلمة')
-      return
-    }
-
-    try {
-      setIsGeneratingFeedback(true)
-      
-      const response = await fetch('/api/generate-feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          teacherAccessCode: (user as any).access_code,
-          submissionId: selectedSubmission.id,
-          grade: grade ? parseInt(grade) : undefined
-        }),
-      })
-
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'فشل إنشاء التعليق')
-
-      if (data.feedback) {
-        setFeedback(data.feedback)
-        toast.success('تم إنشاء التعليق بنجاح!')
-      }
-    } catch (error) {
-      console.error('Error generating feedback:', error)
-      toast.error('فشل إنشاء التعليق')
-    } finally {
-      setIsGeneratingFeedback(false)
     }
   }
 
@@ -234,7 +139,7 @@ export default function GradingPage() {
                 تقييم الإجابات
               </h1>
               <p className="text-slate-600 text-sm md:text-lg font-semibold">
-                تقييم وتصحيح إجابات الطلاب
+                مراجعة إجابات الطلاب والدرجات التلقائية
               </p>
             </div>
             <Button
@@ -293,12 +198,7 @@ export default function GradingPage() {
                             ? 'border-primary bg-primary/10'
                             : 'border-slate-200 bg-white hover:bg-white'
                         }`}
-                        onClick={() => {
-                          setSelectedSubmission(submission)
-                          setGrade((submission.grade ?? submission.auto_graded ?? '').toString())
-                          setFeedback(submission.feedback || submission.auto_feedback || '')
-                          setVoiceGrade(submission.voice_grade?.toString() || '')
-                        }}
+                        onClick={() => setSelectedSubmission(submission)}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0">
@@ -319,11 +219,13 @@ export default function GradingPage() {
                                 <span className="text-xs px-2 py-1 rounded-lg bg-secondary-50 text-secondary-700 border border-secondary-200/30">
                                    تسجيل صوتي
                                 </span>
-                                {submission.voice_grade === null && submission.grade !== null && (
-                                  <span className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/30 animate-pulse">
-                                    <Loader2 className="me-1 inline h-3.5 w-3.5 animate-spin" aria-hidden="true" /> في انتظار تقييم الصوت
-                                  </span>
-                                )}
+                              </div>
+                            )}
+                            {submission.needs_answer_key && (
+                              <div className="mt-2">
+                                <span className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/30">
+                                  يحتاج مفتاح إجابة
+                                </span>
                               </div>
                             )}
                           </div>
@@ -362,9 +264,14 @@ export default function GradingPage() {
             <div>
               {selectedSubmission ? (
                 <Card>
-                  <h3 className="text-lg md:text-xl font-bold text-ink mb-4">تقييم الإجابة</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-ink mb-4">تفاصيل الإجابة</h3>
                   
                   <div className="space-y-4">
+                    {selectedSubmission.needs_answer_key && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+                        {MISSING_ANSWER_KEY_MESSAGE}
+                      </div>
+                    )}
                     <div>
                       <label className="block text-slate-600 font-semibold mb-2">
                         الطالب
@@ -426,16 +333,16 @@ export default function GradingPage() {
                     )}
 
                     {/* Feedback Display */}
-                    {selectedSubmission.feedback && (
+                    {selectedSubmission.feedback || selectedSubmission.auto_feedback ? (
                       <div>
                         <label className="block text-slate-600 font-semibold mb-2">
                           التعليق
                         </label>
                         <div className="bg-white p-3 rounded-lg text-ink text-sm">
-                          {selectedSubmission.feedback}
+                          {selectedSubmission.feedback || selectedSubmission.auto_feedback}
                         </div>
                       </div>
-                    )}
+                    ) : null}
 
                     {/* Answers */}
                     <div>
@@ -498,111 +405,24 @@ export default function GradingPage() {
                             متصفحك لا يدعم تشغيل الصوت
                           </audio>
                         </div>
-                        
-                        {/* Voice Grade Input */}
-                        <div className="mt-4">
-                          <label className="block text-slate-600 font-semibold mb-2">
-                            تقييم القراءة الصوتية (0-100)
-                          </label>
-                          <input
-                            type="number"
-                            value={voiceGrade}
-                            onChange={(e) => setVoiceGrade(e.target.value)}
-                            min="0"
-                            max="100"
-                            className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-ink font-semibold text-sm md:text-base"
-                            disabled={isGrading}
-                            placeholder="الدرجة (0-100)"
-                          />
-                        </div>
                       </div>
                     )}
 
-                    {/* Grade Input */}
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-2">
-                        الدرجة (0-100)
-                      </label>
-                      <input
-                        type="number"
-                        value={grade}
-                        onChange={(e) => setGrade(e.target.value)}
-                        min="0"
-                        max="100"
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-ink font-semibold text-sm md:text-base"
-                        disabled={isGrading}
-                      />
-                    </div>
-
-                    {/* Feedback */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-slate-600 font-semibold text-sm md:text-base">
-                          التعليق (اختياري)
-                        </label>
-                        <button
-                          onClick={generateAIFeedback}
-                          disabled={isGeneratingFeedback || isGrading}
-                          className="flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink transition-colors disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                        >
-                          {isGeneratingFeedback ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                              جاري الإنشاء...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4" />
-                              إنشاء بالذكاء الاصطناعي
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <textarea
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        rows={3}
-                        placeholder="اكتب تعليقك هنا أو استخدم الذكاء الاصطناعي..."
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-ink font-semibold resize-none text-sm md:text-base"
-                        disabled={isGrading || isGeneratingFeedback}
-                      />
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 md:gap-3">
-                      <Button
-                        onClick={handleGradeSubmission}
-                        variant="primary"
-                        size="sm"
-                        className="flex-1 text-sm md:text-base"
-                        isLoading={isGrading}
-                        disabled={isGrading}
-                        icon={<Save className="w-4 h-4" />}
-                      >
-                        {isGrading ? 'جاري الحفظ...' : 'حفظ التقييم'}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedSubmission(null)
-                          setGrade('')
-                          setFeedback('')
-                          setVoiceGrade('')
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className="text-sm md:text-base"
-                        disabled={isGrading}
-                      >
-                        إلغاء
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={() => setSelectedSubmission(null)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-sm md:text-base"
+                    >
+                      إغلاق
+                    </Button>
                   </div>
                 </Card>
               ) : (
                 <Card className="text-center py-12">
                   <Star className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-ink mb-2">اختر إجابة</h3>
-                  <p className="text-slate-500">اختر إجابة من القائمة لتقييمها</p>
+                  <p className="text-slate-500">اختر إجابة من القائمة لعرضها</p>
                 </Card>
               )}
             </div>

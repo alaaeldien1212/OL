@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { useAppStore } from './store'
 import { getAudioExtensionFromMime, normalizeMimeType } from './utils'
+import { stripQuestionAnswerKeys } from './answerKeyGrading'
 
 // Use placeholder values during build time if env vars are not set
 // These will be replaced at runtime when env vars are available
@@ -226,7 +227,7 @@ export const storiesService = {
 }
 
 export const storageService = {
-  async uploadAudioRecording(audioBlob: Blob, studentAccessCode: string, storyId: string): Promise<string> {
+  async uploadAudioRecording(audioBlob: Blob, studentAccessCode: string, storyId: string): Promise<{ audioUrl: string; playbackUrl?: string }> {
     try {
       if (audioBlob.size > 10 * 1024 * 1024) {
         throw new Error('Audio recording exceeds the 10 MB upload limit')
@@ -249,8 +250,16 @@ export const storageService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentAccessCode, storyId, extension, contentType: uploadMimeType })
       })
-      const ticket = await ticketResponse.json() as { path?: string; token?: string; publicUrl?: string; error?: string }
-      if (!ticketResponse.ok || !ticket.path || !ticket.token || !ticket.publicUrl) {
+      const ticket = await ticketResponse.json() as {
+        path?: string
+        token?: string
+        audioUrl?: string
+        playbackUrl?: string | null
+        publicUrl?: string
+        error?: string
+      }
+      const audioUrl = ticket.audioUrl || ticket.publicUrl
+      if (!ticketResponse.ok || !ticket.path || !ticket.token || !audioUrl) {
         throw new Error(ticket.error || 'Failed to authorize audio upload')
       }
 
@@ -265,7 +274,10 @@ export const storageService = {
         throw uploadResult.error
       }
 
-      return ticket.publicUrl
+      return {
+        audioUrl,
+        playbackUrl: ticket.playbackUrl || undefined
+      }
     } catch (error) {
       console.error('Failed to upload audio recording:', error)
       throw error
@@ -292,7 +304,12 @@ export const formsService = {
     })
 
     if (error) throw error
-    return data?.[0] || null
+    const form = data?.[0] || null
+    if (!form) return null
+    return {
+      ...form,
+      questions: Array.isArray(form.questions) ? stripQuestionAnswerKeys(form.questions) : []
+    }
   },
 
 }

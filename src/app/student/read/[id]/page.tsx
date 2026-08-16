@@ -11,6 +11,7 @@ import StoryQuestions from '@/components/student/StoryQuestions'
 import { useAppStore } from '@/lib/store'
 import { storiesService, storageService } from '@/lib/supabase'
 import { normalizeMimeType } from '@/lib/utils'
+import { getAudioUploadErrorMessage } from '@/lib/audioUploadErrors'
 import toast, { Toaster } from 'react-hot-toast'
 import { AlertCircle, Clock3, Mic, Pause, Play, Square, Trash2 } from 'lucide-react'
 
@@ -94,10 +95,10 @@ export default function StoryReader() {
   // Restore uploaded audio URL from localStorage (so replay works after refresh/navigation)
   useEffect(() => {
     try {
-      const storageKey = `audio_recording_${storyId}`
-      const savedUrl = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
-      if (savedUrl && !audioUrl) {
-        setAudioUrl(savedUrl)
+      const playbackKey = `audio_playback_${storyId}`
+      const savedPlayback = typeof window !== 'undefined' ? localStorage.getItem(playbackKey) : null
+      if (savedPlayback && !audioUrl) {
+        setAudioUrl(savedPlayback)
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -293,6 +294,7 @@ export default function StoryReader() {
       const storageKey = `audio_recording_${storyId}`
       if (typeof window !== 'undefined') {
         localStorage.removeItem(storageKey)
+        localStorage.removeItem(`audio_playback_${storyId}`)
       }
     } catch {}
     // Ensure any current playback/recording is stopped
@@ -347,20 +349,18 @@ export default function StoryReader() {
       const studentAccessCode = studentData.access_code
       
       try {
-        const uploadedAudioUrl = await storageService.uploadAudioRecording(audioBlob, studentAccessCode, storyId)
-        
-        // Store the audio URL in localStorage with story ID as key
+        const uploaded = await storageService.uploadAudioRecording(audioBlob, studentAccessCode, storyId)
         const storageKey = `audio_recording_${storyId}`
-        localStorage.setItem(storageKey, uploadedAudioUrl)
-        
+        localStorage.setItem(storageKey, uploaded.audioUrl)
+        if (uploaded.playbackUrl) {
+          localStorage.setItem(`audio_playback_${storyId}`, uploaded.playbackUrl)
+        }
         toast.success('تم حفظ التسجيل الصوتي بنجاح! ', { id: 'uploading' })
       } catch (error) {
         console.error('Error uploading audio:', error)
-        toast.error('فشل تحميل التسجيل الصوتي', { id: 'uploading' })
+        toast.error(getAudioUploadErrorMessage(error), { id: 'uploading' })
         return
       }
-      
-      toast.success('تم حفظ التسجيل الصوتي بنجاح! ')
     } catch (error) {
       console.error('Error completing story:', error)
       toast.error('حدث خطأ في إكمال القصة')

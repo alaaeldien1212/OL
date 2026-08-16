@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter, useParams } from 'next/navigation'
 import { useAppStore } from '@/lib/store'
-import { supabase, adminGradingService, gradingService } from '@/lib/supabase'
+import { supabase, adminGradingService } from '@/lib/supabase'
 import { getTrustedStudentRecordingUrl, inferAudioMimeFromUrl } from '@/lib/utils'
+import { MISSING_ANSWER_KEY_MESSAGE } from '@/lib/answerKeyGrading'
 import Button from '@/components/Button'
 import Card from '@/components/Card'
 import toast from 'react-hot-toast'
@@ -25,8 +26,7 @@ import {
   Clock,
   Award,
   Mic,
-  Brain,
-  Save
+  Brain
 } from 'lucide-react'
 
 interface Story {
@@ -68,6 +68,7 @@ interface Submission {
   audio_url?: string
   submitted_at: string
   graded_at?: string
+  needs_answer_key?: boolean
 }
 
 export default function GradeDetails() {
@@ -83,10 +84,6 @@ export default function GradeDetails() {
   const [viewingForm, setViewingForm] = useState<Form | null>(null)
   const [viewingSubmission, setViewingSubmission] = useState<Submission | null>(null)
   const [activeTab, setActiveTab] = useState<'stories' | 'forms' | 'submissions'>('stories')
-  const [isGrading, setIsGrading] = useState(false)
-  const [editGrade, setEditGrade] = useState('')
-  const [editVoiceGrade, setEditVoiceGrade] = useState('')
-  const [editFeedback, setEditFeedback] = useState('')
 
   useEffect(() => {
     if (!hydrated) return
@@ -131,7 +128,8 @@ export default function GradeDetails() {
         console.log('Submissions loaded:', submissionsData.length)
         setSubmissions(submissionsData.map((submission: Submission) => ({
           ...submission,
-          audio_url: getTrustedStudentRecordingUrl(submission.audio_url)
+          audio_url: getTrustedStudentRecordingUrl(submission.audio_url),
+          needs_answer_key: submission.needs_answer_key === true
         })))
       } catch (error) {
         console.error('Error loading submissions:', error)
@@ -209,76 +207,6 @@ export default function GradeDetails() {
     } catch (error) {
       console.error('Error deleting grade:', error)
       toast.error('فشل حذف الصف')
-    }
-  }
-
-  const handleGradeSubmission = async () => {
-    if (!viewingSubmission) return
-
-    const gradeNum = editGrade ? parseInt(editGrade) : undefined
-    const voiceGradeNum = editVoiceGrade ? parseInt(editVoiceGrade) : undefined
-
-    if (gradeNum !== undefined && (isNaN(gradeNum) || gradeNum < 0 || gradeNum > 100)) {
-      toast.error('الرجاء إدخال درجة صحيحة (0-100)')
-      return
-    }
-
-    if (voiceGradeNum !== undefined && (isNaN(voiceGradeNum) || voiceGradeNum < 0 || voiceGradeNum > 100)) {
-      toast.error('الرجاء إدخال درجة صوتية صحيحة (0-100)')
-      return
-    }
-
-    // At least one grade must be provided
-    if (gradeNum === undefined && voiceGradeNum === undefined) {
-      toast.error('الرجاء إدخال درجة واحدة على الأقل')
-      return
-    }
-
-    try {
-      setIsGrading(true)
-      console.log('Admin grading submission:', viewingSubmission.submission_id)
-
-      // Use the final grade value or keep existing
-      const finalGrade = gradeNum !== undefined ? gradeNum : viewingSubmission.grade
-      const finalVoiceGrade = voiceGradeNum !== undefined ? voiceGradeNum : viewingSubmission.voice_grade
-
-      await gradingService.gradeSubmission(
-        viewingSubmission.submission_id,
-        finalGrade ?? 0,
-        editFeedback || viewingSubmission.feedback || '',
-        finalVoiceGrade
-      )
-
-      toast.success('تم تحديث التقييم بنجاح! ')
-
-      // Update local state
-      setSubmissions(submissions.map(sub =>
-        sub.submission_id === viewingSubmission.submission_id
-          ? {
-              ...sub,
-              grade: finalGrade,
-              voice_grade: finalVoiceGrade,
-              feedback: editFeedback || sub.feedback,
-              graded_at: new Date().toISOString()
-            }
-          : sub
-      ))
-
-      setViewingSubmission(null)
-      setEditGrade('')
-      setEditVoiceGrade('')
-      setEditFeedback('')
-
-      // Refresh submissions
-      setTimeout(() => {
-        loadGradeData()
-      }, 1000)
-
-    } catch (error) {
-      console.error('Error grading submission:', error)
-      toast.error('فشل تحديث التقييم')
-    } finally {
-      setIsGrading(false)
     }
   }
 
@@ -564,7 +492,7 @@ export default function GradeDetails() {
               <Award className="w-6 h-6 md:w-8 md:h-8 text-secondary-700 flex-shrink-0" />
               <div>
                 <h2 className="text-xl md:text-2xl font-bold text-ink">إجابات الطلاب والتقييم ({submissions.length})</h2>
-                <p className="text-slate-600 text-sm md:text-base">عرض جميع إجابات الطلاب مع التقييم الآلي وتقييم المعلم</p>
+                <p className="text-slate-600 text-sm md:text-base">عرض جميع إجابات الطلاب مع التصحيح الآلي</p>
               </div>
             </div>
 
@@ -613,19 +541,10 @@ export default function GradeDetails() {
 
                           {/* Grading Status */}
                           <div className="mt-3 flex flex-wrap gap-2">
-                            {/* AI Grading */}
-                            {submission.auto_graded !== null && (
-                              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary-50 text-primary-700 border border-primary-200/30">
-                                <Brain className="w-3 h-3" />
-                                <span className="text-xs font-bold">AI: {submission.auto_graded}/100</span>
-                              </div>
-                            )}
-
-                            {/* Teacher Grading */}
                             {submission.grade !== null && (
                               <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/30">
                                 <CheckCircle className="w-3 h-3" />
-                                <span className="text-xs font-bold">المعلم: {submission.grade}/100</span>
+                                <span className="text-xs font-bold">الدرجة: {submission.grade}/100</span>
                               </div>
                             )}
 
@@ -645,8 +564,15 @@ export default function GradeDetails() {
                               </div>
                             )}
 
+                            {submission.needs_answer_key && (
+                              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/30">
+                                <Clock className="w-3 h-3" />
+                                <span className="text-xs">يحتاج مفتاح إجابة</span>
+                              </div>
+                            )}
+
                             {/* Ungraded */}
-                            {submission.grade === null && submission.voice_grade === null && (
+                            {submission.grade === null && !submission.needs_answer_key && (
                               <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/30">
                                 <Clock className="w-3 h-3" />
                                 <span className="text-xs">في انتظار التقييم</span>
@@ -668,18 +594,13 @@ export default function GradeDetails() {
                             </div>
                           )}
                           <Button
-                            onClick={() => {
-                              setViewingSubmission(submission)
-                              setEditGrade(submission.grade?.toString() || '')
-                              setEditVoiceGrade(submission.voice_grade?.toString() || '')
-                              setEditFeedback(submission.feedback || '')
-                            }}
+                            onClick={() => setViewingSubmission(submission)}
                             variant="primary"
                             size="md"
-                            icon={<Edit className="w-4 h-4 md:w-5 md:h-5" />}
+                            icon={<Eye className="w-4 h-4 md:w-5 md:h-5" />}
                             className="bg-primary-50 hover:bg-primary-100 w-full sm:w-auto text-sm md:text-base font-bold shadow-lg"
                           >
-                            عرض وتعديل التقييم
+                            عرض الإجابة
                           </Button>
                         </div>
                       </div>
@@ -814,12 +735,7 @@ export default function GradeDetails() {
                     </div>
                   </div>
                   <Button
-                    onClick={() => {
-                      setViewingSubmission(null)
-                      setEditGrade('')
-                      setEditVoiceGrade('')
-                      setEditFeedback('')
-                    }}
+                    onClick={() => setViewingSubmission(null)}
                     variant="ghost"
                     size="sm"
                     icon={<X className="w-4 h-4" />}
@@ -833,116 +749,19 @@ export default function GradeDetails() {
 
               <div className="p-4 md:p-6 overflow-y-auto flex-1">
                 <div className="space-y-6">
-                  {/* Edit Grades Section - Prominently at the top */}
-                  <div className="bg-white   p-3 md:p-6 rounded-xl border-2 border-primary-200/50 shadow-lg">
-                    <h3 className="text-ink font-bold mb-3 md:mb-4 text-base md:text-xl flex items-center gap-2">
-                      <Edit className="w-5 h-5 md:w-6 md:h-6 text-primary-700 flex-shrink-0" />
-                      تعديل التقييم
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      {/* Grade Input */}
-                      <div>
-                        <label className="block text-ink font-semibold mb-2 text-sm md:text-base">
-                          درجة النموذج (0-100)
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="numeric"
-                          value={editGrade}
-                          onChange={(e) => setEditGrade(e.target.value)}
-                          min="0"
-                          max="100"
-                          className="w-full px-3 md:px-4 py-3 md:py-3 border-2 border-primary-200/30 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/30 bg-white text-ink font-semibold text-base md:text-lg"
-                          placeholder="أدخل الدرجة (0-100)"
-                          disabled={isGrading}
-                        />
-                      </div>
-
-                      {/* Voice Grade Input (if audio exists) */}
-                      {viewingSubmission.audio_url && (
-                        <div>
-                          <label className="block text-ink font-semibold mb-2 text-sm md:text-base">
-                            درجة القراءة الصوتية (0-100)
-                          </label>
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            value={editVoiceGrade}
-                            onChange={(e) => setEditVoiceGrade(e.target.value)}
-                            min="0"
-                            max="100"
-                            className="w-full px-3 md:px-4 py-3 md:py-3 border-2 border-secondary-200/30 rounded-lg focus:outline-none focus:ring-4 focus:ring-secondary/30 bg-white text-ink font-semibold text-base md:text-lg"
-                            placeholder="أدخل درجة القراءة (0-100)"
-                            disabled={isGrading}
-                          />
-                        </div>
-                      )}
-
-                      {/* Feedback Input */}
-                      <div>
-                        <label className="block text-ink font-semibold mb-2 text-sm md:text-base">
-                          التعليق (اختياري)
-                        </label>
-                        <textarea
-                          value={editFeedback}
-                          onChange={(e) => setEditFeedback(e.target.value)}
-                          rows={4}
-                          placeholder="أضف تعليقك أو ملاحظاتك..."
-                          className="w-full px-3 md:px-4 py-3 md:py-3 border-2 border-primary-200/30 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/30 bg-white text-ink font-semibold resize-none text-sm md:text-base"
-                          disabled={isGrading}
-                        />
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-2 md:gap-3 pt-2">
-                        <Button
-                          onClick={handleGradeSubmission}
-                          variant="primary"
-                          size="lg"
-                          className="flex-1 text-sm md:text-base font-bold shadow-lg"
-                          isLoading={isGrading}
-                          disabled={isGrading}
-                          icon={<Save className="w-4 h-4 md:w-5 md:h-5" />}
-                        >
-                          {isGrading ? 'جاري الحفظ...' : 'حفظ التقييم'}
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setViewingSubmission(null)
-                            setEditGrade('')
-                            setEditVoiceGrade('')
-                            setEditFeedback('')
-                          }}
-                          variant="ghost"
-                          size="lg"
-                          className="text-sm md:text-base"
-                          disabled={isGrading}
-                        >
-                          إلغاء
-                        </Button>
-                      </div>
+                  {viewingSubmission.needs_answer_key && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+                      {MISSING_ANSWER_KEY_MESSAGE}
                     </div>
-                  </div>
-
-                  <div className="border-t-2 border-slate-200 pt-6"></div>
+                  )}
 
                   {/* Grades Summary */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                    {viewingSubmission.auto_graded !== null && (
-                      <div className="bg-white   rounded-lg p-3 md:p-4 border border-primary-200/30">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Brain className="w-4 h-4 md:w-5 md:h-5 text-primary-700" />
-                          <label className="text-primary-700 font-semibold text-xs md:text-sm">تقييم AI</label>
-                        </div>
-                        <p className="text-ink font-bold text-lg md:text-2xl">{viewingSubmission.auto_graded}/100</p>
-                      </div>
-                    )}
                     {viewingSubmission.grade !== null && (
                       <div className="bg-white   rounded-lg p-3 md:p-4 border border-emerald-200/30">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-700" />
-                          <label className="text-emerald-700 font-semibold text-xs md:text-sm">تقييم المعلم</label>
+                          <label className="text-emerald-700 font-semibold text-xs md:text-sm">الدرجة التلقائية</label>
                         </div>
                         <p className="text-ink font-bold text-lg md:text-2xl">{viewingSubmission.grade}/100</p>
                       </div>
@@ -963,7 +782,7 @@ export default function GradeDetails() {
                     <div>
                       <label className="block text-primary-700 font-semibold mb-2 flex items-center gap-2 text-sm md:text-base">
                         <Brain className="w-4 h-4 md:w-5 md:h-5" />
-                        تعليق AI
+                        تعليق التصحيح
                       </label>
                       <div className="bg-white p-3 md:p-4 rounded-lg text-ink text-sm md:text-base whitespace-pre-wrap">
                         {viewingSubmission.auto_feedback}
@@ -976,7 +795,7 @@ export default function GradeDetails() {
                     <div>
                       <label className="block text-emerald-700 font-semibold mb-2 flex items-center gap-2 text-sm md:text-base">
                         <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
-                        تعليق المعلم
+                        التعليق
                       </label>
                       <div className="bg-white p-3 md:p-4 rounded-lg text-ink text-sm md:text-base whitespace-pre-wrap">
                         {viewingSubmission.feedback}

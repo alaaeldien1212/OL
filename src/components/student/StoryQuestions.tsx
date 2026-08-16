@@ -178,7 +178,7 @@ export default function StoryQuestions(props: Props) {
 
     try {
       setIsSubmitting(true)
-      toast.loading('جاري التقييم التلقائي للإجابات...', { id: 'auto-grading' })
+      toast.loading('جاري التصحيح التلقائي للإجابات...', { id: 'auto-grading' })
 
       const studentData = user as any
       const storageKey = `audio_recording_${storyId}`
@@ -191,7 +191,6 @@ export default function StoryQuestions(props: Props) {
         idempotencyKey = crypto.randomUUID()
         localStorage.setItem(submissionKeyStorage, idempotencyKey)
       }
-      toast.loading('جاري تقييم الإجابات بالذكاء الاصطناعي...', { id: 'auto-grading' })
       const submissionResponse = await fetch('/api/student/submit-and-auto-grade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,13 +210,16 @@ export default function StoryQuestions(props: Props) {
       }
 
       if (submissionResult.autoGraded) {
-        toast.success(`تم التقييم التلقائي! الدرجة: ${submissionResult.grade}`, { id: 'auto-grading' })
+        toast.success(`تم التصحيح تلقائيًا! الدرجة: ${submissionResult.grade}`, { id: 'auto-grading' })
+      } else if (submissionResult.needsAnswerKey) {
+        toast.success('تم حفظ إجاباتك بنجاح. سيظهر التقييم بعد استكمال مفاتيح التصحيح في النموذج.', { id: 'auto-grading' })
       } else {
-        toast.error('فشل التقييم التلقائي، تم إرسال الإجابة للمعلم', { id: 'auto-grading' })
+        toast.success('تم حفظ إجاباتك بنجاح.', { id: 'auto-grading' })
       }
 
       if (audioUrl) {
         localStorage.removeItem(storageKey)
+        localStorage.removeItem(`audio_playback_${storyId}`)
       }
       localStorage.removeItem(submissionKeyStorage)
 

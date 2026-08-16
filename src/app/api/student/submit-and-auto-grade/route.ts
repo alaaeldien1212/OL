@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callAutoGradingGateway, AutoGradingGatewayError } from '@/lib/autoGradingGateway'
-import { autoGradeSubmission, GradingQuestion, GradingResult } from '@/lib/groq'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -14,20 +13,20 @@ type SubmissionRequest = {
   audioUrl?: string
 }
 
+type StoredSubmission = {
+  auto_graded?: number | null
+  auto_feedback?: string | null
+  auto_grading_metadata?: {
+    needs_answer_key?: boolean
+  } | null
+  grade?: number | null
+  feedback_arabic?: string | null
+  status?: string | null
+}
+
 type PreparedStudentSubmission = {
   alreadySubmitted: boolean
-  submission?: {
-    auto_graded?: number | null
-    auto_feedback?: string | null
-  }
-  questions?: GradingQuestion[]
-  answers?: Record<string, string>
-  story?: {
-    title_arabic: string
-    content_arabic: string
-    difficulty: string
-    grade_level: number
-  }
+  submission?: StoredSubmission
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -105,6 +104,19 @@ function gatewayErrorResponse(error: unknown) {
   return NextResponse.json({ error: 'تعذر حفظ الإجابات' }, { status: 500 })
 }
 
+function submissionResponse(submission: StoredSubmission, duplicate = false) {
+  const needsAnswerKey = submission.auto_grading_metadata?.needs_answer_key === true
+  const officialGrade = submission.grade ?? null
+  return {
+    autoGraded: officialGrade !== null && !needsAnswerKey,
+    needsAnswerKey,
+    grade: officialGrade,
+    feedback: submission.feedback_arabic ?? submission.auto_feedback ?? null,
+    submission,
+    duplicate
+  }
+}
+
 export async function POST(request: NextRequest) {
   const contentLength = Number(request.headers.get('content-length') || '0')
   if (contentLength > MAX_REQUEST_LENGTH) {
@@ -144,56 +156,19 @@ export async function POST(request: NextRequest) {
   }
 
   if (prepared.alreadySubmitted && prepared.submission) {
-    return NextResponse.json({
-      autoGraded: prepared.submission.auto_graded !== null && prepared.submission.auto_graded !== undefined,
-      provisional: true,
-      grade: prepared.submission.auto_graded ?? null,
-      feedback: prepared.submission.auto_feedback ?? null,
-      submission: prepared.submission,
-      duplicate: true
-    })
-  }
-
-  if (!prepared.questions || !prepared.answers || !prepared.story) {
-    return NextResponse.json({ error: 'تعذر تجهيز نموذج التقييم' }, { status: 500 })
-  }
-
-  let gradingResult: GradingResult | null = null
-  try {
-    gradingResult = await autoGradeSubmission({
-      questions: prepared.questions,
-      answers: prepared.answers,
-      storyContent: prepared.story.content_arabic.slice(0, 30_000),
-      storyTitle: prepared.story.title_arabic,
-      difficulty: prepared.story.difficulty,
-      gradeLevel: prepared.story.grade_level
-    })
-  } catch (error) {
-    console.error('Groq auto-grading failed; preserving the submission for teacher review:', error)
+    return NextResponse.json(submissionResponse(prepared.submission, true))
   }
 
   try {
-    const persisted = await callAutoGradingGateway<{ submission: unknown; duplicate: boolean }>({
+    const persisted = await callAutoGradingGateway<{ submission: StoredSubmission; duplicate: boolean }>({
       action: 'persist_student',
-      ...submission,
-      autoGrade: gradingResult?.grade ?? null,
-      autoFeedback: gradingResult?.feedback ?? null,
-      autoGradingMetadata: gradingResult ? {
-        confidence: gradingResult.confidence,
-        requires_review: true,
-        question_scores: gradingResult.questionScores,
-        model: 'openai/gpt-oss-20b'
-      } : null
+      ...submission
     })
 
-    return NextResponse.json({
-      autoGraded: gradingResult !== null,
-      provisional: true,
-      grade: gradingResult?.grade ?? null,
-      feedback: gradingResult?.feedback ?? null,
-      submission: persisted.submission,
-      duplicate: persisted.duplicate
-    }, { status: persisted.duplicate ? 200 : 201 })
+    return NextResponse.json(
+      submissionResponse(persisted.submission, persisted.duplicate),
+      { status: persisted.duplicate ? 200 : 201 }
+    )
   } catch (error) {
     return gatewayErrorResponse(error)
   }

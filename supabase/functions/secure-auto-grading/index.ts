@@ -26,6 +26,7 @@ type Question = {
   type: string
   required: boolean
   options?: string[]
+  correct_answer?: string
 }
 
 const jsonHeaders = {
@@ -75,12 +76,15 @@ function parseQuestions(value: unknown): Question[] | null {
       ? question.options.filter((option): option is string => typeof option === 'string').map(option => option.trim())
       : undefined
 
+    const correctAnswer = requiredString(question.correct_answer, 4_000) || undefined
+
     questions.push({
       id,
       text_arabic: text,
       type,
       required: question.required === true,
-      options
+      options,
+      correct_answer: correctAnswer
     })
   }
 
@@ -108,6 +112,90 @@ function normalizeAnswers(value: unknown, questions: Question[]) {
   }
 
   return answers
+}
+
+function normalizeArabicAnswer(value: string) {
+  return value
+    .trim()
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/\u0640/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('ar')
+}
+
+function questionHasAnswerKey(question: Question) {
+  const correctAnswer = question.correct_answer?.trim() || ''
+  if (!correctAnswer) return false
+  if (question.type === 'multiple_choice') {
+    return Boolean(question.options?.map(option => option.trim()).includes(correctAnswer))
+  }
+  return correctAnswer.split('|').some(part => part.trim())
+}
+
+function answersMatch(studentAnswer: string, question: Question) {
+  const submitted = studentAnswer.trim()
+  const correctAnswer = question.correct_answer?.trim() || ''
+  if (!submitted || !correctAnswer) return false
+  if (question.type === 'multiple_choice') return submitted === correctAnswer
+  const normalizedSubmitted = normalizeArabicAnswer(submitted)
+  return correctAnswer.split('|').some(part => normalizeArabicAnswer(part) === normalizedSubmitted)
+}
+
+function gradeAgainstAnswerKey(questions: Question[], answers: Record<string, string>) {
+  const missingQuestionIds = questions.filter(question => !questionHasAnswerKey(question)).map(question => question.id)
+  if (questions.length === 0 || missingQuestionIds.length > 0) {
+    return {
+      ok: false as const,
+      missingQuestionIds,
+      message: 'هذا النموذج يحتاج إلى إضافة الإجابة الصحيحة قبل إمكانية التصحيح الآلي.'
+    }
+  }
+
+  const questionScores = questions.map(question => {
+    const correct = answersMatch(answers[question.id] || '', question)
+    return { questionId: question.id, correct, score: correct ? 100 : 0 }
+  })
+  const correctCount = questionScores.filter(item => item.correct).length
+  const grade = Math.round((correctCount / questions.length) * 100)
+  const feedback = grade === 100
+    ? `تم التصحيح تلقائيًا. أحسنت، جميع الإجابات صحيحة (${correctCount} من ${questions.length}).`
+    : correctCount === 0
+      ? `تم التصحيح تلقائيًا. لم تُحتسب أي إجابة صحيحة من أصل ${questions.length} أسئلة. راجعي القصة ثم حاولي مرة أخرى في المهام القادمة.`
+      : `تم التصحيح تلقائيًا. عدد الإجابات الصحيحة ${correctCount} من ${questions.length}، والدرجة ${grade} من 100.`
+
+  return {
+    ok: true as const,
+    grade,
+    feedback,
+    questionScores,
+    correctCount,
+    totalQuestions: questions.length
+  }
+}
+
+function questionsForClient(questions: Question[]) {
+  return questions.map(({ correct_answer: _correctAnswer, ...question }) => question)
+}
+
+function questionsIndicateMissingKeys(questions: unknown) {
+  if (!Array.isArray(questions) || questions.length === 0) return false
+  const hasKeyField = questions.some(item => item && typeof item === 'object' && 'correct_answer' in (item as object))
+  if (!hasKeyField) return false
+  return questions.some(item => {
+    if (!item || typeof item !== 'object') return true
+    const question = item as JsonRecord
+    return !questionHasAnswerKey({
+      id: String(question.id || ''),
+      text_arabic: String(question.text_arabic || ''),
+      type: String(question.type || ''),
+      required: question.required === true,
+      options: Array.isArray(question.options) ? question.options.filter((option): option is string => typeof option === 'string') : undefined,
+      correct_answer: typeof question.correct_answer === 'string' ? question.correct_answer : undefined
+    })
+  })
 }
 
 function validateAudioUrl(value: unknown, supabaseUrl: string) {
@@ -327,7 +415,7 @@ async function findSubmissionByKey(
 ) {
   const { data, error } = await supabase
     .from('student_submissions')
-    .select('id, student_id, story_id, form_template_id, submitted_at, status, grade, feedback_arabic, auto_graded, auto_feedback')
+    .select('id, student_id, story_id, form_template_id, submitted_at, status, grade, feedback_arabic, auto_graded, auto_feedback, auto_grading_metadata')
     .eq('submission_key', idempotencyKey)
     .maybeSingle()
   if (error) throw error
@@ -438,14 +526,16 @@ Deno.serve(async request => {
           .createSignedUploadUrl(filePath)
         if (signedUploadError) throw signedUploadError
 
-        const { data: publicUrl } = supabase.storage
+        const canonicalAudioUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/student-recordings/${filePath}`
+        const { data: signedRead } = await supabase.storage
           .from('student-recordings')
-          .getPublicUrl(filePath)
+          .createSignedUrl(filePath, 3_600)
 
         return respond(200, {
           path: signedUpload.path,
           token: signedUpload.token,
-          publicUrl: publicUrl.publicUrl
+          audioUrl: canonicalAudioUrl,
+          playbackUrl: signedRead?.signedUrl || null
         })
       }
 
@@ -465,7 +555,7 @@ Deno.serve(async request => {
 
         return respond(200, {
           alreadySubmitted: false,
-          questions: context.questions,
+          questions: questionsForClient(context.questions),
           answers: context.answers,
           story: {
             title_arabic: context.story.title_arabic,
@@ -486,21 +576,21 @@ Deno.serve(async request => {
           return respond(200, { submission: existing, duplicate: true })
         }
 
-        const autoGrade = body.autoGrade === null || body.autoGrade === undefined ? null : Number(body.autoGrade)
-        const autoFeedback = body.autoFeedback === null || body.autoFeedback === undefined
-          ? null
-          : requiredString(body.autoFeedback, 1_200)
-
-        if (autoGrade !== null && (!Number.isInteger(autoGrade) || autoGrade < 0 || autoGrade > 100)) {
-          return respond(400, { error: 'Invalid automatic grade' })
-        }
-        if ((autoGrade === null) !== (autoFeedback === null)) {
-          return respond(400, { error: 'Incomplete automatic grade' })
-        }
-
-        const metadata = body.autoGradingMetadata && typeof body.autoGradingMetadata === 'object'
-          ? body.autoGradingMetadata
-          : null
+        const grading = gradeAgainstAnswerKey(context.questions, context.answers)
+        const submittedAt = new Date().toISOString()
+        const autoGrade = grading.ok ? grading.grade : null
+        const autoFeedback = grading.ok ? grading.feedback : null
+        const metadata = grading.ok
+          ? {
+              source: 'answer_key',
+              question_scores: grading.questionScores,
+              correct_count: grading.correctCount,
+              total_questions: grading.totalQuestions
+            }
+          : {
+              needs_answer_key: true,
+              missing_question_ids: grading.missingQuestionIds
+            }
 
         const { data: inserted, error: insertError } = await supabase
           .from('student_submissions')
@@ -513,11 +603,14 @@ Deno.serve(async request => {
             auto_graded: autoGrade,
             auto_feedback: autoFeedback,
             auto_grading_metadata: metadata,
+            grade: autoGrade,
+            feedback_arabic: autoFeedback,
+            graded_at: grading.ok ? submittedAt : null,
             submission_key: context.idempotencyKey,
-            submitted_at: new Date().toISOString(),
-            status: 'pending'
+            submitted_at: submittedAt,
+            status: grading.ok ? 'graded' : 'pending'
           })
-          .select('id, student_id, story_id, form_template_id, submitted_at, status, grade, feedback_arabic, auto_graded, auto_feedback')
+          .select('id, student_id, story_id, form_template_id, submitted_at, status, grade, feedback_arabic, auto_graded, auto_feedback, auto_grading_metadata')
           .single()
 
         if (insertError?.code === '23505') {
@@ -562,12 +655,17 @@ Deno.serve(async request => {
         if (suggestionsError) throw suggestionsError
 
         const suggestionMap = new Map((suggestions || []).map(item => [item.id, item]))
-        const merged = (submissions || []).map((submission: JsonRecord) => ({
-          ...submission,
-          auto_graded: suggestionMap.get(submission.submission_id as string)?.auto_graded ?? null,
-          auto_feedback: suggestionMap.get(submission.submission_id as string)?.auto_feedback ?? null,
-          auto_grading_metadata: suggestionMap.get(submission.submission_id as string)?.auto_grading_metadata ?? null
-        }))
+        const merged = (submissions || []).map((submission: JsonRecord) => {
+          const suggestion = suggestionMap.get(submission.submission_id as string)
+          const metadata = (suggestion?.auto_grading_metadata || {}) as JsonRecord
+          return {
+            ...submission,
+            auto_graded: suggestion?.auto_graded ?? null,
+            auto_feedback: suggestion?.auto_feedback ?? null,
+            auto_grading_metadata: suggestion?.auto_grading_metadata ?? null,
+            needs_answer_key: metadata.needs_answer_key === true || questionsIndicateMissingKeys(submission.questions)
+          }
+        })
         return respond(200, { submissions: await signSubmissionRecordings(supabase, merged, supabaseUrl) })
       }
 
@@ -729,7 +827,24 @@ Deno.serve(async request => {
             grade_num: gradeLevel
           })
           if (submissionsError) throw submissionsError
-          const safeSubmissions = await signSubmissionRecordings(supabase, submissions || [], supabaseUrl)
+          const ids = (submissions || []).map((submission: JsonRecord) => submission.submission_id).filter(Boolean)
+          const { data: metadataRows, error: metadataError } = ids.length > 0
+            ? await supabase
+              .from('student_submissions')
+              .select('id, auto_grading_metadata')
+              .in('id', ids)
+            : { data: [], error: null }
+          if (metadataError) throw metadataError
+          const metadataMap = new Map((metadataRows || []).map(item => [item.id, item.auto_grading_metadata]))
+          const annotated = (submissions || []).map((submission: JsonRecord) => {
+            const metadata = (metadataMap.get(submission.submission_id as string) || {}) as JsonRecord
+            return {
+              ...submission,
+              auto_grading_metadata: metadata,
+              needs_answer_key: metadata.needs_answer_key === true || questionsIndicateMissingKeys(submission.questions)
+            }
+          })
+          const safeSubmissions = await signSubmissionRecordings(supabase, annotated, supabaseUrl)
           return respond(200, { submissions: safeSubmissions })
         }
 

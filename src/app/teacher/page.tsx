@@ -36,8 +36,8 @@ const dashboardItems = [
   },
   {
     href: '/teacher/grading',
-    title: 'التقييم والتصحيح',
-    description: 'مراجعة إجابات الطلاب وإرسال التغذية الراجعة.',
+    title: 'نتائج الطلاب',
+    description: 'عرض إجابات الطلاب والدرجات التلقائية.',
     icon: Star,
     tone: 'bg-amber-50 text-amber-700',
   },
@@ -118,11 +118,11 @@ export default function TeacherDashboard() {
               </span>
               <div>
                 <h2 className="text-lg font-black text-ink">ابدأ بالمهم الآن</h2>
-                <p className="mt-1 text-sm leading-7 text-slate-600">راجع الإجابات الجديدة، ثم استخدم التحليلات لرؤية الطلاب الذين يحتاجون إلى دعم.</p>
+                <p className="mt-1 text-sm leading-7 text-slate-600">راجع نتائج التصحيح الآلي، ثم استخدم التحليلات لرؤية الطلاب الذين يحتاجون إلى دعم.</p>
               </div>
             </div>
             <Link href="/teacher/grading" onClick={showPageLoader} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-secondary px-5 text-sm font-extrabold text-white hover:bg-secondary-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-secondary/20">
-              مراجعة الإجابات
+              مراجعة النتائج
             </Link>
           </Card>
         </motion.div>

@@ -20,7 +20,9 @@ const AUDIO_CONTENT_TYPES = new Set([
 type UploadTicket = {
   path: string
   token: string
-  publicUrl: string
+  audioUrl?: string
+  playbackUrl?: string | null
+  publicUrl?: string
 }
 
 export async function POST(request: NextRequest) {

@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
+import { assertFormQuestionsHaveAnswerKeys, MISSING_ANSWER_KEY_MESSAGE, questionsMissingAnswerKeys } from '@/lib/answerKeyGrading'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   FileText,
@@ -357,6 +358,11 @@ export default function TeacherFormsPage() {
                           <span className="text-slate-600 text-xs md:text-sm">عدد الأسئلة</span>
                           <span className="text-primary font-bold text-base md:text-lg">{form.questions?.length || 0}</span>
                         </div>
+                        {questionsMissingAnswerKeys(form.questions || []).length > 0 && (
+                          <p className="mb-2 rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
+                            {MISSING_ANSWER_KEY_MESSAGE}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500">
                           <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                           <span>{new Date(form.created_at).toLocaleDateString('ar-SA')}</span>
@@ -465,14 +471,24 @@ function EditFormTemplate({ form, onSuccess }: { form: FormTemplate; onSuccess: 
           baseQuestion.options = (question.options || [])
             .map((option: string) => String(option ?? '').trim())
             .filter((option: string) => option.length > 0)
-          const trimmedCorrectAnswer = question.correct_answer ? String(question.correct_answer).trim() : null
+          const trimmedCorrectAnswer = question.correct_answer ? String(question.correct_answer).trim() : ''
           baseQuestion.correct_answer = trimmedCorrectAnswer && baseQuestion.options.includes(trimmedCorrectAnswer)
             ? trimmedCorrectAnswer
-            : null
+            : trimmedCorrectAnswer
+        } else {
+          baseQuestion.correct_answer = question.correct_answer ? String(question.correct_answer).trim() : ''
         }
 
         return baseQuestion
       })
+
+      try {
+        assertFormQuestionsHaveAnswerKeys(formattedQuestions)
+      } catch (validationError) {
+        toast.error(validationError instanceof Error ? validationError.message : 'كل سؤال يحتاج إلى إجابة صحيحة')
+        setIsSubmitting(false)
+        return
+      }
 
       const { error } = await supabase.rpc('teacher_update_form', {
         form_id_param: form.id,
@@ -621,7 +637,7 @@ function EditQuestionForm({ question, onSave, onCancel }: {
       type,
       required,
       options: type === 'multiple_choice' ? options : [],
-      correct_answer: type === 'multiple_choice' ? correctAnswer : undefined
+      correct_answer: correctAnswer
     })
   }
 
@@ -693,6 +709,7 @@ function EditQuestionForm({ question, onSave, onCancel }: {
             value={correctAnswer}
             onChange={(e) => setCorrectAnswer(e.target.value)}
             className="w-full px-3 py-2 border border-slate-200 rounded bg-white text-ink text-sm"
+            required
           >
             <option value="">اختر الإجابة الصحيحة</option>
             {options.map((option: string, idx: number) => (
@@ -701,6 +718,20 @@ function EditQuestionForm({ question, onSave, onCancel }: {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {(type === 'short_answer' || type === 'long_answer') && (
+        <div className="space-y-2">
+          <label className="text-sm text-slate-600">الإجابة الصحيحة:</label>
+          <input
+            type="text"
+            value={correctAnswer}
+            onChange={(e) => setCorrectAnswer(e.target.value)}
+            placeholder="الإجابة المعتمدة للتصحيح الآلي. يمكن فصل أكثر من إجابة بـ |"
+            className="w-full px-3 py-2 border border-slate-200 rounded bg-white text-ink text-sm"
+            required
+          />
         </div>
       )}
 

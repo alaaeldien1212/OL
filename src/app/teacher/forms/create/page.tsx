@@ -10,6 +10,7 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import { useAppStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
+import { assertFormQuestionsHaveAnswerKeys } from '@/lib/answerKeyGrading'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   FileText, 
@@ -174,19 +175,26 @@ export default function CreateForm() {
       return
     }
 
+    const formQuestions = validQuestions.map(q => ({
+      id: q.id,
+      text_arabic: q.text_arabic,
+      type: q.type,
+      required: q.required,
+      options: q.type === 'multiple_choice' ? q.options : undefined,
+      correct_answer: q.correct_answer?.trim() || undefined,
+    }))
+
+    try {
+      assertFormQuestionsHaveAnswerKeys(formQuestions)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'كل سؤال يحتاج إلى إجابة صحيحة')
+      return
+    }
+
     try {
       setIsSubmitting(true)
 
       const teacherData = user as any
-
-      const formQuestions = validQuestions.map(q => ({
-        id: q.id,
-        text_arabic: q.text_arabic,
-        type: q.type,
-        required: q.required,
-        options: q.type === 'multiple_choice' ? q.options : undefined,
-        correct_answer: q.type === 'multiple_choice' ? q.correct_answer : undefined,
-      }))
 
       // Use the new teacher_create_form function
       const { data, error } = await supabase.rpc('teacher_create_form', {
@@ -464,6 +472,7 @@ export default function CreateForm() {
                                 onChange={(e) => setCorrectAnswer(question.id, e.target.value)}
                                 className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-ink font-semibold"
                                 disabled={isSubmitting}
+                                required
                               >
                                 <option value="">اختر الإجابة الصحيحة</option>
                                 {(question.options || []).map((option, idx) => (
@@ -474,6 +483,27 @@ export default function CreateForm() {
                               </select>
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {(question.type === 'short_answer' || question.type === 'long_answer') && (
+                        <div className="mb-4">
+                          <label className="block text-slate-600 font-semibold mb-2 flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-emerald-700" />
+                            الإجابة الصحيحة
+                          </label>
+                          <input
+                            type="text"
+                            value={question.correct_answer || ''}
+                            onChange={(e) => setCorrectAnswer(question.id, e.target.value)}
+                            placeholder="أدخل الإجابة المعتمدة للتصحيح الآلي. يمكن فصل أكثر من إجابة بـ |"
+                            className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary bg-white text-ink font-semibold"
+                            disabled={isSubmitting}
+                            required
+                          />
+                          <p className="mt-2 text-xs text-slate-500">
+                            هذه الإجابة لا تظهر للطالب، وتُستخدم فقط للتصحيح الآلي.
+                          </p>
                         </div>
                       )}
 

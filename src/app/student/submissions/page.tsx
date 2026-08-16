@@ -105,7 +105,7 @@ export default function StudentSubmissionsPage() {
                 <Star className="w-8 h-8 text-secondary" />
                 إجاباتي وتقييماتي
               </h1>
-              <p className="text-slate-700">اطلع على تقييماتك من المعلم</p>
+              <p className="text-slate-700">اطلع على تقييماتك بعد التصحيح الآلي</p>
             </div>
             <Button
               onClick={() => router.push('/student')}
