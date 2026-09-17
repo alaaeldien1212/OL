@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from '@supabase/supabase-js'
 
-const EXPECTED_SECRET_HASH = 'e4eba8cbed3078244cf9b2171cb8b9829a2d056a94cd2781ca0006d80d85d29d'
+const EXPECTED_SECRET_HASH = 'e5e6516459ecfaf72abe99facc56a27e98fb53b9fdc1812918dd35e482ceabf0'
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const MAX_BODY_LENGTH = 100_000
 const MAX_ANSWER_LENGTH = 8_000
